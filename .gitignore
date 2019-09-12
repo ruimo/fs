@@ -1,2 +1,7 @@
-*.class
-*.log
+ui/node_modules
+project/project/target
+project/target
+target
+ui/target
+ui/yarn.lock
+logs/
