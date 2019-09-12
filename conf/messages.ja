@@ -1,0 +1,37 @@
+# --- Constraints
+constraint.required=(必須)
+constraint.min=最小値は {0} です。
+constraint.max=最大値は {0} です
+constraint.minLength=最小の長さは {0} です。
+constraint.maxLength=最大の長さは {0} です。
+constraint.validatewith=
+constraint.password.char=パスワードは、アルファベット、数字、記号で指定してください
+
+# --- Formats
+format.date=Date (''{0}'')
+format.numeric=数値で指定してください
+format.real=Real
+
+# --- Errors
+# 句点を最後に入れないこと。複数のエラーがある時、カンマ区切りで表示されるので不自然になる。
+error.pasword.char=アルファベット、数字、記号以外の文字は使用できません
+error.invalid=値が不適切です
+error.required=入力必須です
+error.number=数値を入力してください
+error.real=数値を入力してください
+error.real.precision=Real number value with no more than {0} digit(s) including {1} decimal(s) expected
+error.min={0} 以上の値を入力してください
+error.min.strict={0} より大きな値を入力してください
+error.max={0} 以下の値を入力してください
+error.max.strict={0} より小さな値を入力してください
+error.minLength=最小長さは {0} です
+error.maxLength=最大長さは {0} です
+error.email=正しいメールアドレスを入力してください
+error.pattern=次のパターンに従う必要があります {0}
+error.invalid.yyyymmdd=YYYYMMDDの形式で入力してください
+error.value=値が不適切です
+
+nameAndPasswordNotMatched = Userもしくはpasswordが間違っています
+initialApplicationStart = ログを確認して、最初のユーザとパスワードを取得してください
+menu = メニュー
+admin = 管理

@@ -1,0 +1,5 @@
+nameAndPasswordNotMatched = User or password does not match
+initialApplicationStart = Check log file and find the first user and password
+menu = Menu
+admin = Admin
+

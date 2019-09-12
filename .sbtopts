@@ -1,0 +1,5 @@
+-J-Xms1024m 
+-J-Xmx4096m 
+-J-XX:ReservedCodeCacheSize=512m 
+-J-XX:MaxMetaspaceSize=1024m
+-J-XX:+CMSClassUnloadingEnabled

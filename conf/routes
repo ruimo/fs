@@ -1,0 +1,23 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Serve index page from public directory
+GET     /                           controllers.FrontendController.index()
+
+POST    /messages                   controllers.MessageController.messages()
+
+GET     /startLogin                 controllers.UserController.startLogin()
+POST    /login                      controllers.UserController.login()
+POST    /logoff                     controllers.UserController.logoff()
+
+#GET     /changePassword             controllers.UserController.changePasswordStart()
+POST    /changePassword             controllers.UserController.changePassword()
+
+GET     /admin                      controllers.AdminController.top
+
+# An example route (Prefix all API routes with apiPrefix defined in application.conf)
+GET     /api/summary                controllers.HomeController.appSummary
+
+# Serve static assets under public directory
+GET     /*file                      controllers.FrontendController.assetOrDefault(file)
