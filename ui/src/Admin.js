@@ -55,13 +55,18 @@ class Admin extends Component {
   }
 
   msg(key) {
+    if (this.state.messages === undefined) return "";
     return this.state.messages[key];
+  }
+
+  onLoginSuccess(userName) {
+    console.log("onLoginSuccess: " + userName );
   }
 
   render() {
     const body = () => {
       if (this.state.loginNeeded) {
-        return <Login url="/admin"/>;
+        return <Login url="/admin" onLoginSuccess={this.onLoginSuccess}/>;
       } else {
         return <span>{this.msg('admin')}{this.msg('menu')}</span>;
       }

@@ -13,7 +13,15 @@ import './App.css';
 class App extends Component {
   constructor(props) {
     super(props);
-    this.state = {title: ''};
+    this.state = {
+      isNavShown: false
+    };
+  }
+
+  toggleNav = () => {
+    this.setState(prevState => ({
+      isNavShown: !prevState.isNavShown
+    }));
   }
 
   render() {
@@ -27,35 +35,25 @@ class App extends Component {
                 <span>First Saturday</span>
               </Link>
 
-              <div role="button" className="navbar-burger" area-label="menu" aria-expanded="false" data-target="navMenu">
+              <div role="button" className="navbar-burger" area-label="menu" aria-expanded="false" data-target="navMenu"
+                   onClick={this.toggleNav}>
                 <span className="" aria-hidden="true"></span>
                 <span className="" aria-hidden="true"></span>
                 <span className="" aria-hidden="true"></span>
               </div>
             </div>
 
-            <div className="navbar-menu" id="navMenu">
+            <div className={this.state.isNavShown ? 'navbar-menu is-active' : 'navbar-menu'} id="navMenu">
               <div className="navbar-start">
+                <div>Nav menu start</div>
               </div>
               <div className="navbar-end">
+                <div>Nav menu end 0</div>
+                <div>Nav menu end 1</div>
               </div>
             </div>
           </nav>
           <main className="columns">
-            <div className="submenu column is-3">
-              <aside className="box menu">
-                <p className="menu-label">Function</p>
-                <ul className="menu-list">
-                  <li className="menu-item">
-                    <NavLink to="/library/" activeClassName="is-active">
-                      <i className="fas fa-database menu-icon"></i>
-                      <span>Library</span>
-                    </NavLink>
-                  </li>
-                </ul>
-              </aside>
-            </div>
-
             <div className="column">
               <Route path="/admin" component={Admin}/>
             </div>
