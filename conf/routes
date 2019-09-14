@@ -7,6 +7,7 @@ GET     /                           controllers.FrontendController.index()
 
 POST    /messages                   controllers.MessageController.messages()
 
+GET     /loginInfo                  controllers.UserController.loginInfo()
 GET     /startLogin                 controllers.UserController.startLogin()
 POST    /login                      controllers.UserController.login()
 POST    /logoff                     controllers.UserController.logoff()

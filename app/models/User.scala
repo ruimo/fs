@@ -14,8 +14,12 @@ case class User(
   email: String,
   passwordHash: Long,
   salt: Long,
+  role: UserRole,
   deleted: Boolean
-)
+) {
+  def isSuper: Boolean = role == UserRole.SUPER
+  def isAdmin: Boolean = role == UserRole.ADMIN
+}
 
 @Singleton
 class UserRepo @Inject() (
@@ -29,37 +33,47 @@ class UserRepo @Inject() (
     SqlParser.get[String]("users.email") ~
     SqlParser.get[Long]("users.password_hash") ~
     SqlParser.get[Long]("users.salt") ~
+    SqlParser.get[Int]("users.user_role") ~
     SqlParser.get[Boolean]("users.deleted") map {
-      case id~name~email~passwordHash~salt~deleted => User(
-        id.map(UserId.apply), name, email, passwordHash, salt, deleted
+      case id~name~email~passwordHash~salt~role~deleted => User(
+        id.map(UserId.apply), name, email, passwordHash, salt, UserRole.byIndex(role), deleted
       )
     }
   }
 
   def create(
-    name: String, email: String, passwordHash: Long, salt: Long
+    name: String, email: String, passwordHash: Long, salt: Long, role: UserRole
   )(implicit conn: Connection): User = {
     SQL(
       """
       insert into users(
-        user_id, user_name, email, password_hash, salt, deleted
+        user_id, user_name, email, password_hash, salt, user_role, deleted
       ) values (
         (select nextval('users_seq')),
-        {name}, {email}, {passwordHash}, {salt}, false
+        {name}, {email}, {passwordHash}, {salt}, {role}, false
       )
       """
     ).on(
       'name -> name,
       'email -> email,
       'passwordHash -> passwordHash,
-      'salt -> salt
+      'salt -> salt,
+      'role -> role.ordinal
     ).executeUpdate()
 
     val id = SQL("select currval('users_seq')").as(SqlParser.scalar[Long].single)
     User(
-      Some(UserId(id)), name, email, passwordHash, salt, false
+      Some(UserId(id)), name, email, passwordHash, salt, role, false
     )
   }
+
+  def getByUserId(id: UserId)(implicit conn: Connection): Option[User] = SQL(
+     "select * from users where user_id={id}"
+   ).on(
+     'id -> id.value
+   ).as(
+     simple.singleOpt
+   )
 
   def list(
     page: Int = 0, pageSize: Int = 10, orderBy: OrderBy = OrderBy("user_name", Asc)

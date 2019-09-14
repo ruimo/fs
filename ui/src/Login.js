@@ -54,7 +54,8 @@ class Login extends Component {
           userNameError: undefined,
           passwordError: undefined
         });
-        this.props.onLoginSuccess(this.state.userName);
+        if (this.props.onLoginSuccess !== undefined)
+          this.props.onLoginSuccess(this.state.userName);
       } else if (resp.status === 400) {
         const json = await resp.json();
         this.setState({

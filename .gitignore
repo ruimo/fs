@@ -6,3 +6,4 @@ ui/target
 ui/yarn.lock
 logs/
 public/
+*~

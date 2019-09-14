@@ -2,7 +2,6 @@ import React, {Component} from 'react';
 import {
   BrowserRouter as Router,
   Route,
-  NavLink,
   Link
 } from 'react-router-dom';
 
@@ -22,6 +21,10 @@ class App extends Component {
     this.setState(prevState => ({
       isNavShown: !prevState.isNavShown
     }));
+  }
+
+  onLoginSuccess = (userName) => {
+    console.log("App.onLoginSuccess: " + userName );
   }
 
   render() {
@@ -55,7 +58,7 @@ class App extends Component {
           </nav>
           <main className="columns">
             <div className="column">
-              <Route path="/admin" component={Admin}/>
+              <Route path="/admin" render={() => <Admin onLoginSuccess={this.onLoginSuccess}/>}/>
             </div>
           </main>
           <div className="footer">

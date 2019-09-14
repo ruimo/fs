@@ -8,6 +8,7 @@ create table users (
   email varchar(255) not null,
   password_hash bigint not null,
   salt bigint not null,
+  user_role integer not null,
   deleted boolean not null,
   constraint pk_user primary key (user_id)
 );

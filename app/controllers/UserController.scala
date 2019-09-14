@@ -26,12 +26,14 @@ case class ChangePassword(currentPassword: String, newPasswords: (String, String
 @Singleton
 class UserController @Inject() (
   parsers: PlayBodyParsers,
-  implicit val ec: ExecutionContext,
   dbApi: DBApi,
   val userRepo: UserRepo,
   passwordHash: PasswordHash,
-  cc: ControllerComponents
-) extends AbstractController(cc) with I18nSupport with AuthenticatedSupport {
+  authenticated: NeedLogin.Authenticated,
+  optAuthenticated: NeedLogin.OptAuthenticated,
+  cc: ControllerComponents,
+  implicit val ec: ExecutionContext
+) extends AbstractController(cc) with I18nSupport {
   val db = dbApi.database("default")
   val logger = Logger(getClass)
 
@@ -54,37 +56,6 @@ class UserController @Inject() (
     )(ChangePassword.apply)(ChangePassword.unapply)
   )
 
-  // def startLogin(url: String) = Action { implicit req =>
-  //   logger.info("StartLogin(" + url + ")")
-  //   db.withConnection { implicit conn =>
-  //     val count = userRepo.count()
-  //     if (count == 0) {
-  //       logger.info("No users found. Creating first user.")
-  //       val password = passwordHash.password()
-  //       val (salt, hash) = passwordHash.generateWithSalt(password)
-  //       val user = userRepo.create(
-  //         name = userRepo.AdminName, "admin", None, "manager", "set@your.email", hash, salt
-  //       )
-
-  //       logger.info("--------------------")
-  //       logger.info("Your first user '" + user.name + "' has password '" + password + "'")
-  //       logger.info("--------------------")
-
-  //       Ok(
-  //         views.html.login(
-  //           loginForm.fill(
-  //             Login(userRepo.AdminName, "")
-  //           ).discardingErrors.withGlobalError(Messages("checkLogFileForAdminPassword")),
-  //           url
-  //         )
-  //       )
-  //     }
-  //     else {
-  //       Ok(views.html.login(loginForm, url))
-  //     }
-  //   }
-  // }
-
   def startLogin() = Action { implicit req =>
     logger.info("startLogin called.")
     db.withConnection { implicit conn =>
@@ -94,7 +65,7 @@ class UserController @Inject() (
         val password = passwordHash.password()
         val (salt, hash) = passwordHash.generateWithSalt(password)
         val user = userRepo.create(
-          name = userRepo.AdminName, "set@your.email", hash, salt
+          name = userRepo.AdminName, "set@your.email", hash, salt, UserRole.SUPER
         )
 
         logger.info("--------------------")
@@ -122,7 +93,7 @@ class UserController @Inject() (
             loginForm.fill(login).withGlobalError(Messages("nameAndPasswordNotMatched")).errorsAsJson
           )
           case Some(user) =>
-            Ok("").withSession(req.session + LoginSession.loginSessionString(user.id.get.value))
+            Ok("").withSession(req.session + LoginSession.loginSessionString(user))
         }
       }
     )
@@ -136,19 +107,24 @@ class UserController @Inject() (
     changePasswordForm.bind(req.body.asJson.get).fold(
       formWithError => {
         logger.error("UserController.changePassword validation error: " + formWithError)
-        BadRequest(formWithError.errorsAsJson)
+        BadRequest(formWithError.errorsAsJson(req))
       },
       newPassword => db.withConnection { implicit conn =>
         if (
           userRepo.changePassword(
-            UserId(req.user.session.userId),
+            req.login.user.id.get,
             newPassword.currentPassword, newPassword.newPasswords._1
           )
         ) Ok("")
         else BadRequest(
-          changePasswordForm.withGlobalError("passwordDoesnotMatch").errorsAsJson
+          changePasswordForm.withGlobalError("passwordDoesnotMatch").errorsAsJson(req)
         )
       }
     )
+  }
+
+  def loginInfo = optAuthenticated (parsers.anyContent) { implicit req =>
+    println("loginInf: " + req.login)
+    Ok("")
   }
 }

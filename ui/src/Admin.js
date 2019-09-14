@@ -54,13 +54,15 @@ class Admin extends Component {
     }
   }
 
-  msg(key) {
+  msg = (key) => {
     if (this.state.messages === undefined) return "";
     return this.state.messages[key];
   }
 
-  onLoginSuccess(userName) {
-    console.log("onLoginSuccess: " + userName );
+  onLoginSuccess = (userName) => {
+    console.log("Admin.onLoginSuccess: " + userName );
+    if (this.props.onLoginSuccess !== undefined)
+      this.props.onLoginSuccess(userName);
   }
 
   render() {

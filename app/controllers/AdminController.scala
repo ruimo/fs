@@ -20,8 +20,9 @@ class AdminController @Inject() (
   cc: ControllerComponents,
   passwordHash: PasswordHash,
   val userRepo: UserRepo,
-  implicit val ec: ExecutionContext
-) extends AbstractController(cc) with I18nSupport with AuthenticatedSupport {
+  implicit val ec: ExecutionContext,
+  authenticated: NeedLogin.Authenticated
+) extends AbstractController(cc) with I18nSupport {
   val logger = Logger(getClass)
   val db = dbApi.database("default")
 
