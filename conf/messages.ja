@@ -35,3 +35,5 @@ nameAndPasswordNotMatched = Userもしくはpasswordが間違っています
 initialApplicationStart = ログを確認して、最初のユーザとパスワードを取得してください
 menu = メニュー
 admin = 管理
+adminMenu = 管理メニュー
+logoff = ログオフ

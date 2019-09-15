@@ -13,7 +13,7 @@ class Login extends Component {
     console.log("url: " + props.url);
   }
 
-  async componentDidMount() {
+  componentDidMount = async() => {
     try {
       const resp = await fetch("/startLogin");
 
@@ -30,7 +30,8 @@ class Login extends Component {
     }
   }
 
-  async login() {
+  login = async(e) => {
+    e.preventDefault();
     try {
       const resp = await fetch(
         "/login", {
@@ -98,35 +99,35 @@ class Login extends Component {
           </article>
         }
 
-        <div className="field">
-          <div className="control">
-            <label className="label">User</label>
+        <form onSubmit={(e) => {this.login(e)}}>
+          <div className="field">
             <div className="control">
-              <input className="input" type="text" placeholder="Text input" value={this.state.userName}
-                     onChange={(e) => this.setState({userName: e.target.value})}
-              />
+              <label className="label">User</label>
+              <div className="control">
+                <input className="input" type="text" placeholder="Text input" value={this.state.userName}
+                       onChange={(e) => this.setState({userName: e.target.value})}
+                />
+              </div>
+              { userError }
             </div>
-            { userError }
           </div>
-        </div>
 
-        <div className="field">
-          <div className="control">
-            <label className="label">Password</label>
-            <input className="input" type="password" placeholder="Password" value={this.state.password}
-                   onChange={(e) => this.setState({password: e.target.value})}
-            />
-            { passwordError }
+          <div className="field">
+            <div className="control">
+              <label className="label">Password</label>
+              <input className="input" type="password" placeholder="Password" value={this.state.password}
+                     onChange={(e) => this.setState({password: e.target.value})}
+              />
+              { passwordError }
+            </div>
           </div>
-        </div>
 
-        <div className="field">
-          <p className="control">
-            <button className="button is-success" onClick={() => {this.login()}}>
-              Login
-            </button>
-          </p>
-        </div>
+          <div className="field">
+            <p className="control">
+              <input type="submit" className="button is-success" value="Login"/>
+            </p>
+          </div>
+        </form>
       </div>
     );
   }

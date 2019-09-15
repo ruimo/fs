@@ -24,7 +24,6 @@ class AdminController @Inject() (
   authenticated: NeedLogin.Authenticated
 ) extends AbstractController(cc) with I18nSupport {
   val logger = Logger(getClass)
-  val db = dbApi.database("default")
 
   def top = authenticated(parsers.anyContent) { implicit req =>
     Ok("")

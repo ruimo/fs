@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import { withRouter } from 'react-router-dom';
 import './Admin.css';
+import MessagesLoader from "./MessagesLoader";
 
 import Login from "./Login";
 
@@ -8,7 +9,8 @@ class Admin extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      loginNeeded: false
+      loginNeeded: false,
+      messages: MessagesLoader.Empty
     };
   }
 
@@ -26,43 +28,28 @@ class Admin extends Component {
     }
 
     try {
-      const resp = await fetch(
-        "/messages", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Csrf-Token": "nocheck"
-          },
-          body: JSON.stringify({
-            keyArgs: [
-              { key: 'menu' },
-              { key: 'admin' }
-            ]
-          })
-        }
-      );
-
-      if (resp.status === 200) {
-        this.setState({
-          messages: await resp.json()
-        });
-      } else {
-        console.log("error: " + resp.status);
-      }
+      this.setState({
+        messages: await new MessagesLoader().load([
+          { key: 'adminMenu'}
+        ])
+      });
     } catch (e) {
-      console.log("error: " + JSON.stringify(e));
+      console.log("Error: " + JSON.stringify(e));
     }
   }
 
   msg = (key) => {
-    if (this.state.messages === undefined) return "";
-    return this.state.messages[key];
+    return this.state.messages(key);
   }
 
   onLoginSuccess = (userName) => {
     console.log("Admin.onLoginSuccess: " + userName );
     if (this.props.onLoginSuccess !== undefined)
       this.props.onLoginSuccess(userName);
+    this.setState({
+      loginNeeded: false
+    });
+    this.props.history.push("/admin");
   }
 
   render() {
@@ -70,7 +57,7 @@ class Admin extends Component {
       if (this.state.loginNeeded) {
         return <Login url="/admin" onLoginSuccess={this.onLoginSuccess}/>;
       } else {
-        return <span>{this.msg('admin')}{this.msg('menu')}</span>;
+        return <span>{this.state.messages('adminMenu')}</span>;
       }
     };
 

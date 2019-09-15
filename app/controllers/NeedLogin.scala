@@ -19,28 +19,30 @@ import play.api.libs.json.Json
 object NeedLogin {
   val logger = Logger(getClass)
 
-  def onUnauthorized(request: RequestHeader)(implicit conn: Connection): Result = Unauthorized("")
+  def onUnauthorized(request: RequestHeader): Result = Unauthorized(
+    Json.obj(
+      "errorCode" -> "loginRequired"
+    )
+  )
 
   class UserAuthenticatedBuilder (
     parser: BodyParser[AnyContent],
     loginSessionRepo: LoginSessionRepo
   )(
-    implicit ec: ExecutionContext,
-    db: Database
+    implicit ec: ExecutionContext
   ) extends AuthenticatedBuilder[LoginSession](
     { req: RequestHeader =>
       loginSessionRepo.fromRequest(req)
     },
     parser,
-    req => db.withConnection { implicit conn => onUnauthorized(req) }
+    onUnauthorized
   ) {
     @Inject()
     def this (
       parser: BodyParsers.Default,
       loginSessionRepo: LoginSessionRepo
     )(
-      implicit ec: ExecutionContext,
-      db: Database
+      implicit ec: ExecutionContext
     ) = {
       this (parser: BodyParser[AnyContent], loginSessionRepo)
     }
@@ -50,22 +52,20 @@ object NeedLogin {
     parser: BodyParser[AnyContent],
     loginSessionRepo: LoginSessionRepo
   )(
-    implicit ec: ExecutionContext,
-    db: Database
+    implicit ec: ExecutionContext
   ) extends AuthenticatedBuilder[Option[LoginSession]](
     { req: RequestHeader =>
       Some(loginSessionRepo.fromRequest(req))
     },
     parser,
-    req => db.withConnection { implicit conn => onUnauthorized(req) }
+    onUnauthorized
   ) {
     @Inject()
     def this (
       parser: BodyParsers.Default,
       loginSessionRepo: LoginSessionRepo
     )(
-      implicit ec: ExecutionContext,
-      db: Database
+      implicit ec: ExecutionContext
     ) = {
       this (parser: BodyParser[AnyContent], loginSessionRepo)
     }
@@ -99,7 +99,7 @@ object NeedLogin {
     messagesApi: MessagesApi,
     builder: AuthenticatedBuilder[Option[LoginSession]]
   )(
-    implicit val executionContext: ExecutionContext, db: Database
+    implicit val executionContext: ExecutionContext
   ) extends ActionBuilder[OptAuthMessagesRequest, AnyContent] {
     type ResultBlock[A] = (OptAuthMessagesRequest[A]) => Future[Result]
 
@@ -108,7 +108,7 @@ object NeedLogin {
       parser: BodyParsers.Default,
       messagesApi: MessagesApi,
       builder: OptUserAuthenticatedBuilder
-    )(implicit ec: ExecutionContext, db: Database) =
+    )(implicit ec: ExecutionContext) =
       this (parser: BodyParser[AnyContent], messagesApi, builder)
 
     def invokeBlock[A](request: Request[A], block: ResultBlock[A]): Future[Result] =

@@ -10,7 +10,7 @@ import scala.language.postfixOps
 case class SiteId(value: Long) extends AnyVal
 
 case class Site(
-  siteId: Option[SiteId],
+  id: Option[SiteId],
   siteName: String,
   createdAt: Instant
 )
@@ -20,8 +20,8 @@ object Site {
     SqlParser.get[Option[Long]]("site.site_id") ~
     SqlParser.get[String]("site.site_name") ~
     SqlParser.get[Instant]("site.created_at") map {
-      case siteId~siteName~createdAt =>
-        Site(siteId.map(SiteId.apply), siteName, createdAt)
+      case id~siteName~createdAt =>
+        Site(id.map(SiteId.apply), siteName, createdAt)
     }
   }
 

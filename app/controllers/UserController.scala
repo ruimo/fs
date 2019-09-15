@@ -83,8 +83,7 @@ class UserController @Inject() (
     logger.info("login called.")
     loginForm.bind(req.body.asJson.get).fold(
       formWithError => {
-        println("stdout error." + formWithError)
-        logger.error("UserController.login validation error " + formWithError)
+        logger.error("login validation error " + formWithError)
         BadRequest(formWithError.errorsAsJson)
       },
       login => db.withConnection { implicit conn =>
@@ -99,7 +98,8 @@ class UserController @Inject() (
     )
   }
 
-  def logoff = authenticated(parsers.anyContent) { implicit req =>
+  def logoff = Action { implicit req =>
+    logger.info("logoff called.")
     Ok("").withSession(req.session - LoginSession.LoginSessionKey)
   }
 
@@ -124,7 +124,20 @@ class UserController @Inject() (
   }
 
   def loginInfo = optAuthenticated (parsers.anyContent) { implicit req =>
-    println("loginInf: " + req.login)
-    Ok("")
+    req.login match {
+      case None =>
+        Ok(Json.obj())
+      case Some(us) =>
+        val user = us.user
+        Ok(
+          Json.obj(
+            "user" -> Json.obj(
+              "id" -> user.id.get.value,
+              "name" -> user.name,
+              "role" ->  user.role.ordinal
+            )
+          )
+        )
+    }
   }
 }

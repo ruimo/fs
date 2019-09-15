@@ -4,8 +4,9 @@ import {
   Route,
   Link
 } from 'react-router-dom';
-
+import MessagesLoader from "./MessagesLoader";
 import Admin from "./Admin";
+import LogoffButton from "./LogoffButton";
 
 import './App.css';
 
@@ -13,8 +14,65 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      isNavShown: false
+      isNavShown: false,
+      loginUser: undefined,
+      messages: MessagesLoader.Empty
     };
+  }
+
+  componentDidMount = async() => {
+    try {
+      const resp = await fetch("/loginInfo");
+      if (resp.status === 200) {
+        const json = await resp.json();
+        console.log("loginInfo: " + JSON.stringify(json));
+        this.setState({
+          loginUser: json.user === undefined ? undefined : json.user.name
+        });
+      } else {
+        console.log("error: " + resp.status);
+      }
+    } catch (e) {
+      console.log("Error: " + JSON.stringify(e));
+    }
+
+    try {
+      this.setState({
+        messages: await new MessagesLoader().load([
+          { key: 'adminMenu'},
+          { key: 'logoff'},
+        ])
+      });
+    } catch (e) {
+      console.log("Error: " + JSON.stringify(e));
+    }
+  }
+  
+  logoff = async() => {
+    try {
+      const resp = await fetch(
+        "/logoff", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Csrf-Token": "nocheck"
+          },
+        }
+      );
+      if (resp.status === 200) {
+        this.setState({
+          loginUser: undefined
+        });
+      } else {
+        console.log("error: " + resp.status);
+      }
+    } catch (e) {
+      console.log("Error: " + JSON.stringify(e));
+    }
+  }
+
+  adminMenu = () => {
+    this.props.history.push("/admin");
   }
 
   toggleNav = () => {
@@ -25,6 +83,15 @@ class App extends Component {
 
   onLoginSuccess = (userName) => {
     console.log("App.onLoginSuccess: " + userName );
+    this.setState({
+      loginUser: userName
+    });
+  }
+
+  onLogoffSuccess = () => {
+    this.setState({
+      loginUser: undefined
+    });
   }
 
   render() {
@@ -38,7 +105,8 @@ class App extends Component {
                 <span>First Saturday</span>
               </Link>
 
-              <div role="button" className="navbar-burger" area-label="menu" aria-expanded="false" data-target="navMenu"
+              <div role="button" className={this.state.isNavShown ? "navbar-burger is-active" : "navbar-burger"}
+                   area-label="menu" aria-expanded="false" data-target="navMenu"
                    onClick={this.toggleNav}>
                 <span className="" aria-hidden="true"></span>
                 <span className="" aria-hidden="true"></span>
@@ -48,11 +116,13 @@ class App extends Component {
 
             <div className={this.state.isNavShown ? 'navbar-menu is-active' : 'navbar-menu'} id="navMenu">
               <div className="navbar-start">
-                <div>Nav menu start</div>
               </div>
               <div className="navbar-end">
-                <div>Nav menu end 0</div>
-                <div>Nav menu end 1</div>
+                <div>{
+                  this.state.loginUser === undefined ?
+                    <Link to="/admin">{this.state.messages('adminMenu')}</Link> :
+                    <LogoffButton onLogoffSuccess={this.onLogoffSuccess}/>
+                }</div>
               </div>
             </div>
           </nav>
