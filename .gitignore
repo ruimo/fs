@@ -7,3 +7,4 @@ ui/yarn.lock
 logs/
 public/
 *~
+.idea
