@@ -3,62 +3,72 @@ import { withRouter } from 'react-router-dom';
 import './Admin.css';
 import MessagesLoader from "./MessagesLoader";
 
-import Login from "./Login";
-
 class Admin extends Component {
+  /* Prevent error: perform a React state update on an unmounted
+   * component. This is a no-op, but it indicates a memory leak in
+   * your application. To fix, cancel all subscriptions and
+   * asynchronous tasks in the componentWillUnmount method. */
+  _isMounted = false;
+
   constructor(props) {
     super(props);
     this.state = {
-      loginNeeded: false,
       messages: MessagesLoader.Empty
     };
   }
 
   async componentDidMount() {
+    this._isMounted = true;
     try {
       const resp = await fetch("/admin");
       if (resp.status === 401) {
         console.log("Login needed");
-        this.setState({
-          loginNeeded: true
-        });
+        this.props.history.push("/login/admin")
       }
     } catch (e) {
       console.log("Error: " + JSON.stringify(e));
     }
 
     try {
-      this.setState({
-        messages: await new MessagesLoader().load([
-          { key: 'adminMenu'}
-        ])
-      });
+      if (this._isMounted) {
+        this.setState({
+          messages: await new MessagesLoader().load([
+            { key: 'adminMenu'},
+            { key: 'siteMaintenance'}
+          ])
+        });
+      }
     } catch (e) {
       console.log("Error: " + JSON.stringify(e));
     }
+  }
+
+  componentWillUnmount() {
+    this._isMounted = false;
   }
 
   msg = (key) => {
     return this.state.messages(key);
   }
 
-  onLoginSuccess = (userName) => {
-    console.log("Admin.onLoginSuccess: " + userName );
-    if (this.props.onLoginSuccess !== undefined)
-      this.props.onLoginSuccess(userName);
-    this.setState({
-      loginNeeded: false
-    });
-    this.props.history.push("/admin");
+  startSiteMaintenance = () => {
+    this.props.history.push("/site")
   }
 
   render() {
     const body = () => {
-      if (this.state.loginNeeded) {
-        return <Login url="/admin" onLoginSuccess={this.onLoginSuccess}/>;
-      } else {
-        return <span>{this.state.messages('adminMenu')}</span>;
-      }
+      return (
+        <nav className="panel">
+          <p className="panel-heading">
+            {this.msg('adminMenu')}
+          </p>
+          <p className="panel-block" >
+            <a href="#siteMaintenance" className="is-fullwidth" onClick={this.startSiteMaintenance}>
+              {this.msg('siteMaintenance')}
+            </a>
+          </p>
+        </nav>
+      );
     };
 
     return (

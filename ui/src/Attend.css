@@ -1,0 +1,36 @@
+#tsv {
+    width: 100%;
+}
+
+.wrapper {
+    width: 100%;
+}
+
+#agentRecordWrapper {
+    margin-top: 1em;
+}
+
+#buttons {
+    margin-top: 1em;
+}
+
+td.agentLevel {
+    text-align: right !important;
+}
+
+td.lifetimeAp {
+    text-align: right !important;
+}
+
+td.distanceWalked {
+    text-align: right !important;
+}
+
+#agentRecordWrapper .label span {
+    margin-right: 1em;
+    vertical-align: bottom;
+}
+
+.close.button {
+    width: 10em;
+}

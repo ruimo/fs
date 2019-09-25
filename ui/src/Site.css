@@ -1,0 +1,39 @@
+.site {
+    padding: 0.5em;
+}
+
+.emptyMessage {
+    text-align: center;
+    width: 100%;
+    padding-top: 1em;
+    padding-bottom: 1em;
+}
+
+.dialogSiteName {
+    margin-top: 1em;
+}
+
+.dialogButtons {
+    margin-top: 1em;
+}
+
+.errorMessage {
+    margin-top: 1em;
+    display: none;
+}
+
+.errorMessage.is-active {
+    display: block;
+}
+
+.control.datetime {
+    background-color: white;
+}
+
+#timeZoneSelect {
+    min-width: 40em;
+}
+
+.button.is-success {
+    margin-top: 1em;
+}

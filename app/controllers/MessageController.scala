@@ -1,21 +1,12 @@
 package controllers
 
 import play.api.i18n.Messages
-import java.net.URLDecoder
 
-import play.api.data._
-import play.api.data.Forms._
 import play.api.i18n.{I18nSupport, Lang, MessagesApi}
 import play.api.libs.json.{JsString, Json, JsObject}
 import javax.inject._
 import play.api._
-import play.api.db.DBApi
 import play.api.mvc._
-import java.time.{Instant, LocalDateTime, ZoneId, ZoneOffset}
-import java.time.ZoneOffset.UTC
-
-import helpers.PasswordHash
-import helpers.Sanitizer
 
 @Singleton
 class MessageController @Inject() (

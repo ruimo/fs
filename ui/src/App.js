@@ -6,9 +6,13 @@ import {
 } from 'react-router-dom';
 import MessagesLoader from "./MessagesLoader";
 import Admin from "./Admin";
+import Login from "./Login";
+import Attend from "./Attend";
+import Site from "./Site";
 import LogoffButton from "./LogoffButton";
+import "@fortawesome/fontawesome-free/js/all.min.js"
 
-import './App.css';
+import './App.sass';
 
 class App extends Component {
   constructor(props) {
@@ -18,6 +22,10 @@ class App extends Component {
       loginUser: undefined,
       messages: MessagesLoader.Empty
     };
+  }
+
+  msg = (key) => {
+    return this.state.messages(key);
   }
 
   componentDidMount = async() => {
@@ -40,7 +48,7 @@ class App extends Component {
       this.setState({
         messages: await new MessagesLoader().load([
           { key: 'adminMenu'},
-          { key: 'logoff'},
+          { key: 'logoff'}
         ])
       });
     } catch (e) {
@@ -101,8 +109,8 @@ class App extends Component {
           <nav className="navbar" role="navigation" area-label="main navigation">
             <div className="navbar-brand">
               <Link to="/" className="navbar-item">
-                <i className="fas fa-music menu-icon"></i>
-                <span>First Saturday</span>
+                <i className="brand-icon fas fa-walking"></i>
+                <span className="brand-title">First Saturday</span>
               </Link>
 
               <div role="button" className={this.state.isNavShown ? "navbar-burger is-active" : "navbar-burger"}
@@ -128,11 +136,19 @@ class App extends Component {
           </nav>
           <main className="columns">
             <div className="column">
-              <Route path="/admin" render={() => <Admin onLoginSuccess={this.onLoginSuccess}/>}/>
+              <Route path="/admin" exact render={() => <Admin onLoginSuccess={this.onLoginSuccess}/>}/>
+              <Route path="/site" exact render={() => <Site onLoginSuccess={this.onLoginSuccess}/>}/>
+              <Route path="/login/:nextUrl" render={() => <Login onLoginSuccess={this.onLoginSuccess}/>}/>
+              <Route path="/attend/:siteId" render={() => <Attend/>}/>
             </div>
           </main>
           <div className="footer">
-            FOOTER
+            <div>
+              First Saturday Helper
+            </div>
+            <div>
+              S.Hanai
+            </div>
           </div>
         </div>
       </Router>

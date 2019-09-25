@@ -6,11 +6,11 @@ import './Login.css';
 class Login extends Component {
   constructor(props) {
     super(props);
+    console.log("url: " + props.nextUrl);
     this.state = {
       userName: "",
       password: ""
     };
-    console.log("url: " + props.url);
   }
 
   componentDidMount = async() => {
@@ -24,6 +24,7 @@ class Login extends Component {
           message: json['message']
         });
       } else {
+        console.log("error: " + resp.status);
       }
     } catch (e) {
       console.log("error: " + JSON.stringify(e));
@@ -49,12 +50,7 @@ class Login extends Component {
 
       console.log("status: " + resp.status);
       if (resp.status === 200) {
-        this.setState({
-          globalError: undefined,
-          message: undefined,
-          userNameError: undefined,
-          passwordError: undefined
-        });
+        this.props.history.push("/" + this.props.match.params.nextUrl);
         if (this.props.onLoginSuccess !== undefined)
           this.props.onLoginSuccess(this.state.userName);
       } else if (resp.status === 400) {
@@ -75,13 +71,13 @@ class Login extends Component {
   render() {
     const userError = this.state.userNameError !== undefined ?
       <div className="error">
-        { this.state.userNameError.map((e) => <div>{e}</div>) }
+        { this.state.userNameError.map((e, i) => <div key={i}>{e}</div>) }
       </div>
       : "";
 
     const passwordError = this.state.passwordError !== undefined ?
       <div className="error">
-        { this.state.passwordError.map((e) => <div>{e}</div>) }
+        { this.state.passwordError.map((e, i) => <div key={i}>{e}</div>) }
       </div>
       : "";
 

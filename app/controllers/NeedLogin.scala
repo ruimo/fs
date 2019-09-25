@@ -25,12 +25,16 @@ object NeedLogin {
     )
   )
 
+  val onInsufficientRole: Result = Unauthorized(
+    Json.obj(
+      "errorCode" -> "insufficientRole"
+    )
+  )
+
   class UserAuthenticatedBuilder (
     parser: BodyParser[AnyContent],
     loginSessionRepo: LoginSessionRepo
-  )(
-    implicit ec: ExecutionContext
-  ) extends AuthenticatedBuilder[LoginSession](
+  )(implicit ec: ExecutionContext) extends AuthenticatedBuilder[LoginSession](
     { req: RequestHeader =>
       loginSessionRepo.fromRequest(req)
     },
@@ -41,11 +45,8 @@ object NeedLogin {
     def this (
       parser: BodyParsers.Default,
       loginSessionRepo: LoginSessionRepo
-    )(
-      implicit ec: ExecutionContext
-    ) = {
+    )(implicit ec: ExecutionContext) =
       this (parser: BodyParser[AnyContent], loginSessionRepo)
-    }
   }
 
   class OptUserAuthenticatedBuilder (
@@ -64,11 +65,8 @@ object NeedLogin {
     def this (
       parser: BodyParsers.Default,
       loginSessionRepo: LoginSessionRepo
-    )(
-      implicit ec: ExecutionContext
-    ) = {
+    )(implicit ec: ExecutionContext) =
       this (parser: BodyParser[AnyContent], loginSessionRepo)
-    }
   }
 
   class Authenticated(
@@ -116,4 +114,9 @@ object NeedLogin {
         block(new OptAuthMessagesRequest[A](authRequest.user, messagesApi, request))
       })
   }
+
+  def assumeUser(permitted: Boolean)(result: => Result): Result =
+    if (permitted) result else onInsufficientRole
+
+  def assumeSuperUser(login: LoginSession)(result: => Result): Result = assumeUser(login.isSuper)(result)
 }
