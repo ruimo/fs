@@ -359,7 +359,7 @@ class Attend extends Component {
           <div className="modal-content">
             <div className='dialogButtons'>
               <div>
-                <img src={process.env.PUBLIC_URL + "/help.png"}/>
+                <img alt="help" src={process.env.PUBLIC_URL + "/help.png"}/>
               </div>
               <div>
                 <a href="#close-help" className="button close is-info"
