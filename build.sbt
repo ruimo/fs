@@ -6,6 +6,13 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala).settings(
   watchSources ++= (baseDirectory.value / "public/ui" ** "*").get
 )
 
+publishTo := Some(
+  Resolver.file(
+    "scoins",
+    new File(Option(System.getenv("RELEASE_DIR")).getOrElse("/tmp"))
+  )
+)
+
 resolvers += "ruimo.com" at "http://static.ruimo.com/release"
 
 resolvers += Resolver.sonatypeRepo("snapshots")
