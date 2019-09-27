@@ -126,11 +126,14 @@ class App extends Component {
               <div className="navbar-start">
               </div>
               <div className="navbar-end">
-                <div>{
-                  this.state.loginUser === undefined ?
-                    <Link to="/admin">{this.state.messages('adminMenu')}</Link> :
-                    <LogoffButton onLogoffSuccess={this.onLogoffSuccess}/>
-                }</div>
+                <div className="navbar-item">
+                  <Link to="/admin">{this.state.messages('adminMenu')}</Link>
+                </div>
+                {this.state.loginUser === undefined ? "" :
+                 <div className="navbar-item">
+                   <LogoffButton onLogoffSuccess={this.onLogoffSuccess}/>
+                 </div>
+                }
               </div>
             </div>
           </nav>
