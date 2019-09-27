@@ -5,6 +5,7 @@ services:
     user: $UID
     environment:
      - APP_SECRET
+     - POSTGRES_SU_PASSWORD
     ports:
      - "$PUBLISH_PORT:9000"
     restart: always
