@@ -2,7 +2,6 @@ version: '3'
 services:
   app:
     image: "ruimo/fs:${TAG_NAME:-latest}"
-    user: $UID
     environment:
      - APP_SECRET
      - POSTGRES_SU_PASSWORD
