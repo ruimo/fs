@@ -12,7 +12,9 @@ import play.api.mvc._
   * @param cc Controller components reference.
   */
 @Singleton
-class FrontendController @Inject()(assets: Assets, errorHandler: HttpErrorHandler, config: Configuration, cc: ControllerComponents) extends AbstractController(cc) {
+class FrontendController @Inject()(
+  assets: Assets, errorHandler: HttpErrorHandler, config: Configuration, cc: ControllerComponents
+) extends AbstractController(cc) {
   val apiPrefix = config.get[String]("apiPrefix")
 
   def index: Action[AnyContent] = assets.at("index.html")
