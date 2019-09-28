@@ -280,20 +280,22 @@ class Attend extends Component {
           <p className="panel-heading">
             {this.state.siteName}
           </p>
-          <div className="panel-block row0">
-            <div>
-              <table className="table site-table">
-                <tbody>
-                  <tr>
-                    <td>{this.msg('dateTime')}</td>
-                    <td>{this.state.heldOn}</td>
-                  </tr>
-                  <tr>
-                    <td>{this.msg('timeZone')}</td>
-                    <td>{this.state.timezone}</td>
-                  </tr>
-                </tbody>
-              </table>
+          <div className="panel-block">
+            <div className="row0">
+              <div>
+                <table className="table site-table">
+                  <tbody>
+                    <tr>
+                      <td>{this.msg('dateTime')}</td>
+                      <td>{this.state.heldOn}</td>
+                    </tr>
+                    <tr>
+                      <td>{this.msg('timeZone')}</td>
+                      <td>{this.state.timezone}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
             <div className="qr">
               <QRCode value={"https://fs.ruimo.com/attend/" + this.props.match.params.siteId} size={64}/>
