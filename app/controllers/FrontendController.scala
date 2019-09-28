@@ -13,12 +13,15 @@ import play.api.mvc._
   */
 @Singleton
 class FrontendController @Inject()(assets: Assets, errorHandler: HttpErrorHandler, config: Configuration, cc: ControllerComponents) extends AbstractController(cc) {
+  val apiPrefix = config.get[String]("apiPrefix")
 
   def index: Action[AnyContent] = assets.at("index.html")
 
-  def assetOrDefault(resource: String): Action[AnyContent] = if (resource.startsWith(config.get[String]("apiPrefix"))){
+  def assetOrDefault(resource: String): Action[AnyContent] = if (resource.startsWith(apiPrefix)){
+    println("Assert '" + resource + "' is api. (apiPrefix: '"  + apiPrefix + "')")
     Action.async(r => errorHandler.onClientError(r, NOT_FOUND, "Not found"))
   } else {
+    println("Assert '" + resource + "' is not api. (apiPrefix: '"  + apiPrefix + "')")
     if (resource.contains(".")) assets.at(resource) else index
   }
 }
