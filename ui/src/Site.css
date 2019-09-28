@@ -37,3 +37,8 @@
 .button.is-success {
     margin-top: 1em;
 }
+
+#siteTable tr:hover td {
+    background: blue;
+    cursor: pointer;
+}

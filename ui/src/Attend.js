@@ -5,6 +5,7 @@ import './Attend.css';
 import MessagesLoader from "./MessagesLoader";
 import cx from 'classnames';
 import Cookies from 'js-cookie/src/js.cookie.js';
+import QRCode from "qrcode.react"
 
 class Attend extends Component {
   constructor(props) {
@@ -252,6 +253,8 @@ class Attend extends Component {
       }
     };
 
+    const helpUrl = `${process.env.PUBLIC_URL}/help.png`;
+
     return (
       <div className="attend">
         {message}
@@ -262,7 +265,7 @@ class Attend extends Component {
             {this.state.siteName}
           </p>
           <div className="panel-block">
-            <table className="table">
+            <table className="table site-table">
               <tbody>
                 <tr>
                   <td>{this.msg('dateTime')}</td>
@@ -274,6 +277,9 @@ class Attend extends Component {
                 </tr>
               </tbody>
             </table>
+            <div className="qr">
+              <QRCode value={"https://fs.ruimo.com/attend/" + this.props.match.params.siteId} size="64"/>
+            </div>
           </div>
           
           <div className="panel-block">
@@ -359,7 +365,7 @@ class Attend extends Component {
           <div className="modal-content">
             <div className='dialogButtons'>
               <div>
-                <img alt="help" src={process.env.PUBLIC_URL + "/help.png"}/>
+                <img alt="help" src={helpUrl}/>
               </div>
               <div>
                 <a href="#close-help" className="button close is-info"

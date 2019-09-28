@@ -214,6 +214,10 @@ class Site extends Component {
     }
   }
 
+  onSiteClicked = (siteId) => {
+    this.props.history.push("/attend/" + siteId);
+  }
+
   render() {
     const siteNameError = this.state.siteNameError !== undefined ?
       <div className="error">
@@ -243,7 +247,7 @@ class Site extends Component {
           <tbody id="siteTable">
             {
               this.state.records.map((e) =>
-                <tr key={e.siteId}>
+                <tr key={e.siteId} onClick={(ev) => this.onSiteClicked(e.siteId)}>
                   <td>{e.siteName}</td>
                   <td>{e.dateTime}</td>
                   <td>{e.timeZone}</td>

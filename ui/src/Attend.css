@@ -34,3 +34,13 @@ td.distanceWalked {
 .close.button {
     width: 10em;
 }
+
+.qr canvas {
+    margin-left: 1em;
+    vertical-align: top;
+    border: solid 2px white;
+}
+
+.site-table {
+    margin-bottom: 0px !important;
+}
