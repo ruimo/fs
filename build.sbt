@@ -1,7 +1,9 @@
 name := """fs"""
 
-lazy val root = (project in file(".")).enablePlugins(PlayScala).settings(
-  watchSources ++= (baseDirectory.value / "public/ui" ** "*").get
+lazy val root = (project in file(".")).enablePlugins(PlayScala, BuildInfoPlugin).settings(
+  watchSources ++= (baseDirectory.value / "public/ui" ** "*").get,
+  buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion),
+  buildInfoPackage := "version"
 )
 
 publishTo := Some(

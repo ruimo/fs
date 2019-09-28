@@ -20,7 +20,8 @@ class App extends Component {
     this.state = {
       isNavShown: false,
       loginUser: undefined,
-      messages: MessagesLoader.Empty
+      messages: MessagesLoader.Empty,
+      version: "???"
     };
   }
 
@@ -29,6 +30,21 @@ class App extends Component {
   }
 
   componentDidMount = async() => {
+    try {
+      const resp = await fetch("/version");
+      if (resp.status === 200) {
+        const json = await resp.json();
+        console.log("version: " + JSON.stringify(json));
+        this.setState({
+          version: json.version
+        });
+      } else {
+        console.log("error: " + resp.status);
+      }
+    } catch (e) {
+      console.log("Error: " + JSON.stringify(e));
+    }
+
     try {
       const resp = await fetch("/loginInfo");
       if (resp.status === 200) {
@@ -146,6 +162,7 @@ class App extends Component {
             </div>
           </main>
           <div className="footer">
+            <div>{this.state.version}</div>
             <div>
               First Saturday Helper
             </div>

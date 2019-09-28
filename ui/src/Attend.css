@@ -44,3 +44,18 @@ td.distanceWalked {
 .site-table {
     margin-bottom: 0px !important;
 }
+
+.row0 {
+    display: table !important;
+}
+
+.site-table {
+    display: table-cell;
+    vertical-align: top;
+}
+
+.qr {
+    display: table-cell;
+    vertical-align: top;
+}
+

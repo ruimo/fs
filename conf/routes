@@ -28,7 +28,7 @@ POST    /registerRecord             controllers.AgentRecordController.createAgen
 GET     /registeredRecords          controllers.AgentRecordController.registeredRecords(siteId: Long, agentName: String)
 
 # An example route (Prefix all API routes with apiPrefix defined in application.conf)
-GET     /api/summary                controllers.HomeController.appSummary
+GET     /version                    controllers.HomeController.version
 
 # Serve static assets under public directory
 GET     /*file                      controllers.FrontendController.assetOrDefault(file)
