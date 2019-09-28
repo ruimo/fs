@@ -6,6 +6,7 @@ import MessagesLoader from "./MessagesLoader";
 import cx from 'classnames';
 import Cookies from 'js-cookie/src/js.cookie.js';
 import QRCode from "qrcode.react"
+import helpImage from'./images/help.png';
 
 class Attend extends Component {
   constructor(props) {
@@ -253,8 +254,6 @@ class Attend extends Component {
       }
     };
 
-    const helpUrl = `${process.env.PUBLIC_URL}/help.png`;
-
     return (
       <div className="attend">
         {message}
@@ -365,7 +364,7 @@ class Attend extends Component {
           <div className="modal-content">
             <div className='dialogButtons'>
               <div>
-                <img alt="help" src={helpUrl}/>
+                <img alt="help" src={helpImage}/>
               </div>
               <div>
                 <a href="#close-help" className="button close is-info"
