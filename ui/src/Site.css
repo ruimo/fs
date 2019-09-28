@@ -38,7 +38,15 @@
     margin-top: 1em;
 }
 
+#siteTable tr.selected td {
+    background: #0033FF;
+}
+
 #siteTable tr:hover td {
-    background: blue;
+    background: gray;
     cursor: pointer;
+}
+
+.button.update {
+    margin-right: 1em;
 }

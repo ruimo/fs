@@ -1,5 +1,6 @@
 package controllers
 
+import scala.util.{Try, Success, Failure}
 import java.time.{Instant, LocalDateTime, ZonedDateTime}
 import java.time.format.DateTimeFormatter
 
@@ -32,20 +33,20 @@ class AgentRecordController @Inject() (
   val logger = Logger(getClass)
   val formatter = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")
 
-    def toJson(map: imm.Map[AgentRecordPhase, (AgentRecord, Site)]): JsObject = JsObject {
-      map.toSeq.map { case (key: AgentRecordPhase, value: (AgentRecord, Site)) =>
-        val (ar, site) = value
+  def toJson(map: imm.Map[AgentRecordPhase, (AgentRecord, Site)]): JsObject = JsObject {
+    map.toSeq.map { case (key: AgentRecordPhase, value: (AgentRecord, Site)) =>
+      val (ar, site) = value
 
-        key.toString -> Json.obj(
-          "id" -> ar.id.get.value,
-          "agentName" -> ar.agentName,
-          "agentLevel" -> ar.agentLevel,
-          "lifetimeAp" -> ar.lifetimeAp.toString,
-          "distanceWalked" -> ar.distanceWalked,
-          "createdAt" -> formatter.withZone(site.heldOnZoneId).format(ar.createdAt)
-        )
-      }
+      key.toString -> Json.obj(
+        "id" -> ar.id.get.value,
+        "agentName" -> ar.agentName,
+        "agentLevel" -> ar.agentLevel,
+        "lifetimeAp" -> ar.lifetimeAp.toString,
+        "distanceWalked" -> ar.distanceWalked,
+        "createdAt" -> formatter.withZone(site.heldOnZoneId).format(ar.createdAt)
+      )
     }
+  }
 
   def createAgentRecord = Action { implicit req =>
     val json = req.body.asJson.get
@@ -55,27 +56,36 @@ class AgentRecordController @Inject() (
       case _ => AgentRecordPhase.START
     }
     val tsvStr: String = (json \ "tsv").as[String]
-    val tsv: Tsv = Tsv.parse(tsvStr)
     val overwrite: Boolean = (json \ "overwrite").as[Boolean]
-
-    db.withConnection { implicit conn =>
-      if (! overwrite) {
-        if (agentRecordRepo.getByAgentNameWithSite(siteId, tsv.agentName).get(phase).isDefined) Conflict("")
-        else {
-          agentRecordRepo.create(
-            siteId, tsv.agentName, tsv.agentLevel, tsv.lifetimeAp, tsv.distanceWalked, phase, tsvStr
+    Try(Tsv.parse(tsvStr)) match {
+      case Failure(e) =>
+        logger.error("Tsv parse error.", e)
+        BadRequest(
+          Json.obj(
+            "errorCode" -> "csvFormatError"
           )
-
-          Ok(toJson(agentRecordRepo.getByAgentNameWithSite(siteId, tsv.agentName)))
-        }
-      } else {
-        agentRecordRepo.delete(siteId, tsv.agentName, phase)
-        agentRecordRepo.create(
-          siteId, tsv.agentName, tsv.agentLevel, tsv.lifetimeAp, tsv.distanceWalked, phase, tsvStr
         )
 
-        Ok(toJson(agentRecordRepo.getByAgentNameWithSite(siteId, tsv.agentName)))
-      }
+      case Success(tsv) =>
+        db.withConnection { implicit conn =>
+          if (! overwrite) {
+            if (agentRecordRepo.getByAgentNameWithSite(siteId, tsv.agentName).get(phase).isDefined) Conflict("")
+            else {
+              agentRecordRepo.create(
+                siteId, tsv.agentName, tsv.agentLevel, tsv.lifetimeAp, tsv.distanceWalked, phase, tsvStr
+              )
+
+              Ok(toJson(agentRecordRepo.getByAgentNameWithSite(siteId, tsv.agentName)))
+            }
+          } else {
+            agentRecordRepo.delete(siteId, tsv.agentName, phase)
+            agentRecordRepo.create(
+              siteId, tsv.agentName, tsv.agentLevel, tsv.lifetimeAp, tsv.distanceWalked, phase, tsvStr
+            )
+
+            Ok(toJson(agentRecordRepo.getByAgentNameWithSite(siteId, tsv.agentName)))
+          }
+        }
     }
   }
 

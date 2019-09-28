@@ -65,6 +65,46 @@ class SiteController @Inject() (
     )
   }
 
+  def updateSite(siteId: Long) = authenticated(parsers.anyContent) { implicit req =>
+    createSiteForm.bind(req.body.asJson.get).fold(
+      formWithError => {
+        logger.error("updateSite validation error " + formWithError)
+        BadRequest(formWithError.errorsAsJson(req))
+      },
+      newSite => db.withConnection { implicit conn =>
+        try {
+          val id = SiteId(siteId)
+          val userId: Option[UserId] = req.login.user.id
+          siteRepo.get(id) match {
+            case None =>
+              NotFound("")
+            case Some(site) =>
+              if (site.owner == userId.get || req.login.isSuper) {
+                siteRepo.update(
+                  SiteId(siteId), newSite.siteName, newSite.utc, newSite.timeZone.zoneId, site.owner
+                )
+
+                Ok(
+                  Json.obj(
+                    "id" -> siteId.toString
+                  )
+                )
+              } else {
+                Forbidden("")
+              }
+          }
+        } catch {
+          case e: UniqueConstraintException =>
+            Conflict(
+              Json.obj(
+                "errorCode" -> "recordWithSameNameExists"
+              )
+            )
+        }
+      }
+    )
+  }
+
   def listSiteToUpdate(
     page: Int, pageSize: Int, orderBySpec: String
   ) = authenticated(parsers.anyContent) { implicit req =>

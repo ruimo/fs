@@ -64,6 +64,25 @@ class SiteRepo @Inject() (
     Site(Some(SiteId(id)), siteName, heldOnUtc, heldOnZoneId, owner, now)
   }
 
+  def update(
+    id: SiteId, siteName: String, heldOnUtc: Instant, heldOnZoneId: ZoneId, owner: UserId
+  )(implicit conn: Connection): Long = SQL(
+    """
+    update site set
+       site_name = {siteName},
+       held_on_utc = {heldOnUtc},
+       held_on_zone_id = {heldOnZoneId},
+       owner = {owner}
+    where site_id = {id}
+    """
+  ).on(
+    'id -> id.value,
+    'siteName -> siteName,
+    'heldOnUtc -> heldOnUtc,
+    'heldOnZoneId -> heldOnZoneId.getId,
+    'owner -> owner.value
+  ).executeUpdate()
+
   def get(siteId: SiteId)(implicit conn: Connection): Option[Site] = SQL(
     "select * from site where site_id = {siteId}"
   ).on(

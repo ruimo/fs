@@ -52,7 +52,8 @@ class Attend extends Component {
           { key: 'createdAt'},
           { key: 'registerBeforeRecordGuide'},
           { key: 'registerAfterRecordGuide'},
-          { key: 'registerCompleted'}
+          { key: 'registerCompleted'},
+          { key: 'csvFormatError'}
         ])
       });
     } catch (e) {
@@ -149,6 +150,11 @@ class Attend extends Component {
         globalError: '',
         message: ''
       });
+    } else if (resp.status === 400) {
+      this.setState({
+        csvError: this.msg('csvFormatError'),
+        message: ''
+      });
     } else if (resp.status === 409) {
       this.setState({
         recordAlreadyExists: phase,
@@ -194,6 +200,11 @@ class Attend extends Component {
         tsv: '',
         records: json,
         globalError: '',
+        message: ''
+      });
+    } else if (resp.status === 400) {
+      this.setState({
+        csvError: this.msg('csvFormatError'),
         message: ''
       });
     } else {
@@ -254,6 +265,12 @@ class Attend extends Component {
       }
     };
 
+    const csvError = this.state.csvError !== undefined ?
+      <div className="error">
+        { this.state.csvError }
+      </div>
+      : "";
+
     return (
       <div className="attend">
         {message}
@@ -300,6 +317,7 @@ class Attend extends Component {
                 </label>
                 <textarea id="tsv" rows="10" placeholder={this.msg('pasteAgentRecord')}
                           value={this.state.tsv} onChange={(e) => this.setState({tsv: e.target.value})}/>
+                { csvError }
               </div>
 
               <div id="buttons">

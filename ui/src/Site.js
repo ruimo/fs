@@ -3,8 +3,8 @@ import { withRouter } from 'react-router-dom';
 import './Common.css';
 import './Site.css';
 import MessagesLoader from "./MessagesLoader";
-import bulmaCalendar from 'bulma-calendar/dist/js/bulma-calendar.min.js';
 import cx from 'classnames';
+import Calendar from 'react-calendar';
 
 class Site extends Component {
   constructor(props) {
@@ -16,27 +16,13 @@ class Site extends Component {
       pageSize: 10,
       orderBy: 'site.created_at desc',
       records: [],
-      deleteErrorMessage: ''
+      deleteErrorMessage: '',
+      date: new Date(),
+      time: "00:00"
     };
   }
   
-  setupCalendar = () => {
-    const calendars = bulmaCalendar.attach(
-      '[type="date"]',
-      {
-        type: 'datetime',
-        validateLabel: this.msg('register'),
-        showTodayButton: false,
-        showClearButton: false,
-        dateFormat: 'YYYY/MM/DD'
-      }
-    );
-    calendars.forEach(calendar => {
-      calendar.on('date:selected', date => {
-	console.log(date);
-      });
-    });
-  }
+  onDateChanged = date => this.setState({date});
 
   renderRecords = async() => {
     try {
@@ -99,10 +85,13 @@ class Site extends Component {
           { key: 'recordEmpty'},
           { key: 'deleteConfirm'},
           { key: 'delete'},
-          { key: 'cancel'}
+          { key: 'cancel'},
+          { key: 'date'},
+          { key: 'time'},
+          { key: 'update'},
+          { key: 'deleted'}
         ])
       });
-      this.setupCalendar();
     } catch (e) {
       console.log("Error: " + JSON.stringify(e));
     }
@@ -112,8 +101,15 @@ class Site extends Component {
     return this.state.messages(key);
   }
 
-  create = async(e) => {
-    e.preventDefault();
+  onCreateSite = () => {
+    this.createOrUpdateSite("/createSite");
+  }
+
+  onUpdateSite = () => {
+    this.createOrUpdateSite("/updateSite?siteId=" + this.state.selectedSite.siteId);
+  }
+
+  createOrUpdateSite = async(url) => {
     try {
       this.setState({
         siteNameError: undefined,
@@ -122,8 +118,15 @@ class Site extends Component {
         message: undefined
       });
 
+      const dateTime =
+            this.state.date.getFullYear() + "/" +
+            ('0' + (this.state.date.getMonth() + 1)).slice(-2) + "/" +
+            ('0' + this.state.date.getDate()).slice(-2) +
+             ' ' + this.state.time;
+
       const resp = await fetch(
-        "/createSite", {
+        url,
+        {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -131,8 +134,8 @@ class Site extends Component {
           },
           body: JSON.stringify({
             siteName: this.state.siteName,
-            dateTime: document.getElementById('datetime').value,
-            timeZoneIndex: document.getElementById('timeZoneSelect').selectedIndex
+            dateTime: dateTime,
+            timeZoneIndex: document.getElementById('timeZoneSelect').selectedIndex,
           })
         }
       );
@@ -146,6 +149,7 @@ class Site extends Component {
         this.renderRecords();
       } else if (resp.status === 400) {
         const json = await resp.json();
+        console.log(JSON.stringify(json));
         this.setState({
           globalError: json[''],
           siteNameError: json['siteName'],
@@ -153,6 +157,14 @@ class Site extends Component {
         });
       } else if (resp.status === 401) {
         this.props.history.push("/login/admin")
+      } else if (resp.status === 403) {
+        this.setState({
+          globalError: this.msg('error.unknown')
+        });
+      } else if (resp.status === 404) {
+        this.setState({
+          globalError: this.msg('deleted')
+        });
       } else if (resp.status === 409) {
         this.setState({
           siteNameError: [this.msg('duplicated')]
@@ -218,6 +230,31 @@ class Site extends Component {
     this.props.history.push("/attend/" + siteId);
   }
 
+  selectSite = (siteId, siteName, datetime, timezone) => {
+    const dates = datetime.split(' ');
+    const dateElems = dates[0].split('/');
+    const date = new Date(dateElems[0], dateElems[1], dateElems[2]);
+    const time = dates[1];
+
+    this.setState({
+      selectedSite: {
+        siteId: siteId
+      },
+      siteName: siteName,
+      date,
+      time
+    });
+
+    const sel = document.getElementById('timeZoneSelect');
+    const opts = sel.children;
+    for (let i = 0; i < opts.length; ++i) {
+      if (opts[i].innerHTML === timezone) {
+        sel.value = i;
+        break;
+      }
+    }
+  }
+
   render() {
     const siteNameError = this.state.siteNameError !== undefined ?
       <div className="error">
@@ -247,13 +284,26 @@ class Site extends Component {
           <tbody id="siteTable">
             {
               this.state.records.map((e) =>
-                <tr key={e.siteId} onClick={(ev) => this.onSiteClicked(e.siteId)}>
-                  <td>{e.siteName}</td>
+                <tr key={e.siteId}
+                    className={this.state.selectedSite !== undefined && this.state.selectedSite.siteId === e.siteId ? 'selected' : ''}
+                    onClick={(ev) => this.selectSite(e.siteId, e.siteName, e.dateTime, e.timeZone)}>
+                  <td>
+                    {e.siteName}
+                    &nbsp;
+                    <a href="#attend" className="is-info button"
+                       onClick={(ev) => this.onSiteClicked(e.siteId)}>
+                      <i className="fas fa-external-link-alt"></i>
+                    </a>
+                  </td>
                   <td>{e.dateTime}</td>
                   <td>{e.timeZone}</td>
                   <td>{e.owner}</td>
-                  <td><a href="#delete" className="delete is-large is-danger button"
-                         onClick={ev => this.showDeleteDialog(e.siteId, e.siteName)}> </a></td>
+                  <td>
+                    <a href="#delete" className="is-danger button"
+                       onClick={ev => this.showDeleteDialog(e.siteId, e.siteName)}>
+                      <i className="far fa-trash-alt"></i>
+                    </a>
+                  </td>
                 </tr>
               )
             }
@@ -279,7 +329,7 @@ class Site extends Component {
             {this.msg('siteMaintenance')}
           </p>
           <div className="panel-block">
-            <form onSubmit={(e) => {this.create(e)}}>
+            <form>
               <div className="field">
                 <div className="control">
                   <label className="label">{this.msg('siteName')}</label>
@@ -294,9 +344,20 @@ class Site extends Component {
 
               <div className="field">
                 <div className="control">
-                  <label className="label">{this.msg('dateTime')}</label>
-                  <div className="control datetime">
-                    <input type="date" id="datetime"/>
+                  <label className="label">{this.msg('date')}</label>
+                  <div className="control">
+                    <Calendar onChange={this.onDateChanged} value={this.state.date}/>
+                  </div>
+                  { dateTimeError }
+                </div>
+              </div>
+
+              <div className="field">
+                <div className="control">
+                  <label className="label">{this.msg('time')}</label>
+                  <div className="control">
+                    <input className="input" type="text" value={this.state.time}
+                           onChange={(e) => this.setState({time: e.target.value})}/>
                   </div>
                   { dateTimeError }
                 </div>
@@ -314,7 +375,12 @@ class Site extends Component {
 
               <div className="field">
                 <p className="control">
-                  <input type="submit" className="button is-success" value={this.msg("register")}/>
+                  { this.state.selectedSite !== undefined ?
+                    <button type="button" className="button is-success update"
+                            onClick={this.onUpdateSite}>{this.msg("update")}</button>
+                    : ""}
+                  <button type="button" className="button is-success"
+                          onClick={this.onCreateSite}>{this.msg("register")}</button>
                 </p>
               </div>
             </form>
