@@ -4,13 +4,19 @@ class MessagesLoader {
   }
 
   async load(keyArgs) {
+    const lang = (window.navigator.languages && window.navigator.languages[0]) ||
+          window.navigator.language ||
+          window.navigator.userLanguage ||
+          window.navigator.browserLanguage;
+
     try {
       const resp = await fetch(
         "/messages", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Csrf-Token": "nocheck"
+            "Csrf-Token": "nocheck",
+            "Accept-language": lang
           },
           body: JSON.stringify({
             keyArgs: keyArgs
