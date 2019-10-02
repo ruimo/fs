@@ -10,6 +10,7 @@
   },
   "private": true,
   "dependencies": {
+    "bulma": "^0.7.5",
     "classnames": "^2.2.6",
     "js-cookie": "^2.2.1",
     "kleur": "^3.0.3",

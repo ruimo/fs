@@ -4,10 +4,11 @@ class MessagesLoader {
   }
 
   async load(keyArgs) {
-    const lang = (window.navigator.languages && window.navigator.languages[0]) ||
-          window.navigator.language ||
-          window.navigator.userLanguage ||
-          window.navigator.browserLanguage;
+    let lang = (window.navigator.languages && window.navigator.languages[0]) ||
+        window.navigator.language ||
+        window.navigator.userLanguage ||
+        window.navigator.browserLanguage;
+    if (lang.startsWith("ja-")) lang = "ja";
 
     try {
       const resp = await fetch(
