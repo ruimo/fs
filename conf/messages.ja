@@ -49,6 +49,7 @@ duplicated = 既に使用されています
 owner = 所有者
 recordEmpty = レコードの登録がありません
 deleteConfirm = 削除してよろしいですか？
+agentRecordWillBeDeleted = エージェント・レコードも削除されます
 delete = 削除
 cancel = キャンセル
 siteNotFound = 指定されたファースト・サタデーが見つかりませんでした。URLを確認してください

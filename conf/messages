@@ -16,6 +16,7 @@ duplicated = Already used
 owner = Owner
 recordEmpty = Record empty
 deleteConfirm = Are you ok to delete it?
+agentRecordWillBeDeleted = Agent records are removed too.
 delete = Delete
 cancel = Canel
 siteNotFound = The specified First Site event not found. Check the URL.

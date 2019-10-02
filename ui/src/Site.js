@@ -89,7 +89,8 @@ class Site extends Component {
           { key: 'date'},
           { key: 'time'},
           { key: 'update'},
-          { key: 'deleted'}
+          { key: 'deleted'},
+          { key: 'agentRecordWillBeDeleted'}
         ])
       });
     } catch (e) {
@@ -103,6 +104,9 @@ class Site extends Component {
 
   onCreateSite = () => {
     this.createOrUpdateSite("/createSite");
+    this.setState({
+      selectedSite: undefined
+    });
   }
 
   onUpdateSite = () => {
@@ -394,11 +398,14 @@ class Site extends Component {
         <div className={cx("modal", {'is-active': this.state.deleteCandidate !== undefined})}>
           <div className="modal-background"></div>
           <div className="modal-content">
+            <div className='dialogSiteName'>
+              { this.state.deleteCandidate !== undefined ? this.state.deleteCandidate.siteName : "" }
+            </div>
             <div>
               { this.msg('deleteConfirm') }
             </div>
-            <div className='dialogSiteName'>
-              { this.state.deleteCandidate !== undefined ? this.state.deleteCandidate.siteName : "" }
+            <div>
+              { this.msg('agentRecordWillBeDeleted') }
             </div>
             <div className='dialogButtons'>
               <a href="#deleteSite" className="button is-danger"
