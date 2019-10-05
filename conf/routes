@@ -22,6 +22,7 @@ GET     /timeZoneInfo               controllers.TimeZoneController.table
 POST    /createSite                 controllers.SiteController.createSite
 POST    /updateSite                 controllers.SiteController.updateSite(siteId: Long)
 GET     /listSiteToUpdate           controllers.SiteController.listSiteToUpdate(page: Int ?= 0, pageSize: Int ?= 10, orderBySpec ?= "site.created_at desc")
+GET     /listSite                   controllers.SiteController.listSite(page: Int ?= 0, pageSize: Int ?= 10, orderBySpec ?= "site.created_at desc")
 POST    /deleteSite                 controllers.SiteController.deleteSite(siteId: Long)
 
 GET     /attend                     controllers.AttendController.index(siteId: Long)

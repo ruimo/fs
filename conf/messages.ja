@@ -73,3 +73,5 @@ time = 時刻
 update = 更新
 deleted = 削除されたレコードです
 csvFormatError = CSVの形式が間違っています
+siteList = 開催地一覧
+administrator = 管理者

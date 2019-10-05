@@ -129,6 +129,29 @@ class SiteController @Inject() (
     }
   }
 
+  def listSite(
+    page: Int, pageSize: Int, orderBySpec: String
+  ) = Action { implicit req =>
+    db.withConnection { implicit conn =>
+      val list: PagedRecords[(Site, User)] = siteRepo.listWithOwner(page, pageSize, OrderBy(orderBySpec), None)
+      Ok(
+        Json.obj(
+          "page" -> list.currentPage,
+          "pageSize" -> list.pageSize,
+          "table" -> list.records.map { case (site, user) =>
+              Json.obj(
+                "siteId" -> site.id.get.value,
+                "siteName" -> site.siteName,
+                "dateTime" -> formatter.format(ZonedDateTime.ofInstant(site.heldOnUtc, site.heldOnZoneId)),
+                "timeZone" -> (site.heldOnZoneId + "(" + site.heldOnZoneId.getRules.getOffset(Instant.EPOCH) + ")"),
+                "owner" -> user.name
+              )
+          }
+        )
+      )
+    }
+  }
+
   def deleteSite(siteId: Long) = authenticated(parsers.anyContent) { implicit req =>
     val userId: Option[UserId] = req.login.user.id
     db.withConnection { implicit conn =>

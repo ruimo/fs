@@ -3,8 +3,9 @@ import { withRouter } from 'react-router-dom';
 import './Common.css';
 import './Site.css';
 import MessagesLoader from "./MessagesLoader";
-import cx from 'classnames';
 import Calendar from 'react-calendar';
+import SiteTable from "./SiteTable";
+import SiteRepo from "./SiteRepo";
 
 class Site extends Component {
   constructor(props) {
@@ -16,7 +17,6 @@ class Site extends Component {
       pageSize: 10,
       orderBy: 'site.created_at desc',
       records: [],
-      deleteErrorMessage: '',
       date: new Date(),
       time: "00:00"
     };
@@ -24,28 +24,21 @@ class Site extends Component {
   
   onDateChanged = date => this.setState({date});
 
-  renderRecords = async() => {
-    try {
-      const url = "/listSiteToUpdate?page=" + this.state.page
-            + "&pageSize=" + this.state.pageSize
-            + "&orderBySpec=" + this.state.orderBy;
-      const resp = await fetch(encodeURI(url));
-
-      if (resp.status === 200) {
-        const json = await resp.json();
-        console.log("json: " + JSON.stringify(json));
+  renderRecords = () => {
+    SiteRepo.listToUpdate(
+      this.state.page, this.state.pageSize, this.state.orderBy,
+      (table) => {
         this.setState({
-          records: json['table']
+          records: table
         });
-      } else if (resp.status === 401) {
-        console.log("Login needed");
-        this.props.history.push("/login/site")
-      } else {
-        console.log("error: " + resp.status);
+      },
+      () => {
+        this.props.history.push("/login/site");
+      },
+      (msg) => {
+        console.log(msg);
       }
-    } catch (e) {
-      console.log("error: " + JSON.stringify(e));
-    }
+    );
   }
 
   componentDidMount = async() => {
@@ -111,6 +104,10 @@ class Site extends Component {
 
   onUpdateSite = () => {
     this.createOrUpdateSite("/updateSite?siteId=" + this.state.selectedSite.siteId);
+  }
+
+  onSiteDeleted = (siteId) => {
+    this.renderRecords();
   }
 
   createOrUpdateSite = async(url) => {
@@ -183,63 +180,8 @@ class Site extends Component {
       console.log("error: " + JSON.stringify(e));
     }
   }
-  
-  msg = (key) => {
-    return this.state.messages(key);
-  }
 
-  showDeleteDialog = (siteId, siteName) => {
-    this.setState({
-      deleteCandidate: {
-        siteId: siteId,
-        siteName: siteName
-      }
-    });
-  }
-
-  cancelDelete = (e) => {
-    this.setState({
-      deleteCandidate: undefined
-    });
-  }
-
-  deleteSite = async(siteId) => {
-    try {
-      const resp = await fetch(
-        "/deleteSite?siteId=" + siteId, {
-          method: "POST",
-          headers: {
-            "Csrf-Token": "nocheck"
-          },
-          body: ''
-        }
-      );
-
-      if (resp.status === 200) {
-        this.setState({
-          deleteCandidate: undefined
-        });
-        this.renderRecords();
-      } else if (resp.status === 403) {
-        this.setState({
-          deleteErrorMessage: this.msg('unknownError')
-        });
-      }
-    } catch (e) {
-      console.log("error: " + JSON.stringify(e));
-    }
-  }
-
-  onSiteClicked = (siteId) => {
-    this.props.history.push("/attend/" + siteId);
-  }
-
-  selectSite = (siteId, siteName, datetime, timezone) => {
-    const dates = datetime.split(' ');
-    const dateElems = dates[0].split('/');
-    const date = new Date(dateElems[0], dateElems[1], dateElems[2]);
-    const time = dates[1];
-
+  onSiteSelected = (siteId, siteName, date, time, timezone) => {
     this.setState({
       selectedSite: {
         siteId: siteId
@@ -272,47 +214,6 @@ class Site extends Component {
       </div>
       : "";
 
-    const records = this.state.records.length === 0 ?
-        <span className="emptyMessage">{this.msg('recordEmpty')}</span>
-      :
-        <table className="table is-striped">
-          <thead>
-            <tr>
-              <th>{this.msg('siteName')}</th>
-              <th>{this.msg('dateTime')}</th>
-              <th>{this.msg('timeZone')}</th>
-              <th>{this.msg('owner')}</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="siteTable">
-            {
-              this.state.records.map((e) =>
-                <tr key={e.siteId}
-                    className={this.state.selectedSite !== undefined && this.state.selectedSite.siteId === e.siteId ? 'selected' : ''}
-                    onClick={(ev) => this.selectSite(e.siteId, e.siteName, e.dateTime, e.timeZone)}>
-                  <td>
-                    {e.siteName}
-                    &nbsp;
-                    <a href="#attend" className="is-info button"
-                       onClick={(ev) => this.onSiteClicked(e.siteId)}>
-                      <i className="fas fa-external-link-alt"></i>
-                    </a>
-                  </td>
-                  <td>{e.dateTime}</td>
-                  <td>{e.timeZone}</td>
-                  <td>{e.owner}</td>
-                  <td>
-                    <a href="#delete" className="is-danger button"
-                       onClick={ev => this.showDeleteDialog(e.siteId, e.siteName)}>
-                      <i className="far fa-trash-alt"></i>
-                    </a>
-                  </td>
-                </tr>
-              )
-            }
-          </tbody>
-        </table>;
 
     return (
       <div className="site">
@@ -390,38 +291,10 @@ class Site extends Component {
             </form>
           </div>
           <div className="panel-block">
-            { records }
+            <SiteTable records={this.state.records} onSiteSelected={this.onSiteSelected} onSiteDeleted={this.onSiteDeleted}
+                       canDeleteSite={true}/>
           </div>
         </nav>
-
-        { /* Modals */ }
-        <div className={cx("modal", {'is-active': this.state.deleteCandidate !== undefined})}>
-          <div className="modal-background"></div>
-          <div className="modal-content">
-            <div className='dialogSiteName'>
-              { this.state.deleteCandidate !== undefined ? this.state.deleteCandidate.siteName : "" }
-            </div>
-            <div>
-              { this.msg('deleteConfirm') }
-            </div>
-            <div>
-              { this.msg('agentRecordWillBeDeleted') }
-            </div>
-            <div className='dialogButtons'>
-              <a href="#deleteSite" className="button is-danger"
-                 onClick={(e) => {this.deleteSite(this.state.deleteCandidate.siteId);}}>
-                {this.msg('delete')}
-              </a>&nbsp;
-              <a href="#deleteSite" className="button" onClick={(e) => {this.cancelDelete(e);}}>
-                {this.msg('cancel')}
-              </a>
-            </div>
-            <div className={cx("notification is-danger errorMessage", {'is-active': this.state.deleteErrorMessage !== ''})}>
-              {this.state.deleteErrorMessage}
-            </div>
-          </div>
-          <button className="modal-close is-large" aria-label="close" onClick={(e) => {this.cancelDelete(e);}}></button>
-        </div>
       </div>
     );
   }

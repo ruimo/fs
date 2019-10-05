@@ -9,6 +9,7 @@ import Admin from "./Admin";
 import Login from "./Login";
 import Attend from "./Attend";
 import Site from "./Site";
+import SiteList from "./SiteList";
 import LogoffButton from "./LogoffButton";
 import "@fortawesome/fontawesome-free/js/all.min.js"
 
@@ -155,8 +156,9 @@ class App extends Component {
           </nav>
           <main className="columns">
             <div className="column">
-              <Route path="/admin" exact render={() => <Admin onLoginSuccess={this.onLoginSuccess}/>}/>
-              <Route path="/site" exact render={() => <Site onLoginSuccess={this.onLoginSuccess}/>}/>
+              <Route exact path="/" render={() => <SiteList/>}/>
+              <Route path="/admin" exact render={() => <Admin/>}/>
+              <Route path="/site" exact render={() => <Site/>}/>
               <Route path="/login/:nextUrl" render={() => <Login onLoginSuccess={this.onLoginSuccess}/>}/>
               <Route path="/attend/:siteId" render={() => <Attend/>}/>
             </div>

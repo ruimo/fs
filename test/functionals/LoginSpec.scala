@@ -11,15 +11,14 @@ import helpers.{Helper, InjectorSupport}
 import models.{UserRepo, UserRole}
 import org.fluentlenium.core.conditions.Conditions
 import play.api.db.Database
+import org.specs2.specification.AfterAll
 
 class LoginSpec extends Specification with InjectorSupport with UsingSelenide {
   override val conf: Map[String, Any] = inMemoryDatabase()
   def appl: PlayApp = GuiceApplicationBuilder().configure(conf).build()
 
   "Login" should {
-    "Show login page for admin" in new WithServer(app = appl, port = 9080) {
-      Configuration.baseUrl = "http://localhost:9080"
-
+    "Show login page for admin" in new WithServer(app = appl, port = testPort) {
       val userRepo: UserRepo = inject[UserRepo]
       val db = inject[Database]
       db.withConnection { implicit conn =>
@@ -35,10 +34,6 @@ class LoginSpec extends Specification with InjectorSupport with UsingSelenide {
       $("#password").setValue(Helper.TestPassword)
       $("#loginButton").click()
       $("#logoffButton").should(Condition.visible)
-    }
-
-    "Show login page for admin2" in new WithServer(app = appl, port = 9080) {
-      1 === 1
     }
   }
 }
