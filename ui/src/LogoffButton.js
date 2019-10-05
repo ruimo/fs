@@ -47,7 +47,7 @@ class LogoffButton extends Component {
 
   render() {
     return (
-      <button className='button' onClick={(e) => this.logoff()}>{this.state.messages('logoff')}</button>
+      <button id="logoffButton" className='button' onClick={(e) => this.logoff()}>{this.state.messages('logoff')}</button>
     );
   }
 }

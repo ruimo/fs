@@ -101,7 +101,7 @@ class Login extends Component {
               <label className="label">User</label>
               <div className="control">
                 <input className="input" type="text" placeholder="Text input" value={this.state.userName}
-                       onChange={(e) => this.setState({userName: e.target.value})}
+                       id="userName" onChange={(e) => this.setState({userName: e.target.value})}
                 />
               </div>
               { userError }
@@ -112,7 +112,7 @@ class Login extends Component {
             <div className="control">
               <label className="label">Password</label>
               <input className="input" type="password" placeholder="Password" value={this.state.password}
-                     onChange={(e) => this.setState({password: e.target.value})}
+                     id="password" onChange={(e) => this.setState({password: e.target.value})}
               />
               { passwordError }
             </div>
@@ -120,7 +120,7 @@ class Login extends Component {
 
           <div className="field">
             <p className="control">
-              <input type="submit" className="button is-success" value="Login"/>
+              <input type="submit" id="loginButton" className="button is-success" value="Login"/>
             </p>
           </div>
         </form>

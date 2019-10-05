@@ -143,7 +143,7 @@ class App extends Component {
               </div>
               <div className="navbar-end">
                 <div className="navbar-item">
-                  <Link to="/admin">{this.state.messages('adminMenu')}</Link>
+                  <Link to="/admin" id="adminLink">{this.state.messages('adminMenu')}</Link>
                 </div>
                 {this.state.loginUser === undefined ? "" :
                  <div className="navbar-item">
