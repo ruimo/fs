@@ -3,8 +3,6 @@ import { withRouter } from 'react-router-dom';
 import './Common.css';
 import './AgentRecords.css';
 import MessagesLoader from "./MessagesLoader";
-import cx from 'classnames';
-import QRCode from "qrcode.react"
 
 class AgentRecords extends Component {
   constructor(props) {
