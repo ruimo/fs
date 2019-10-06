@@ -20,11 +20,6 @@ class ShowSiteListOnTopSpec extends Specification with InjectorSupport with Usin
   override val conf: Map[String, Any] = inMemoryDatabase()
 
   "Show site list on top page" should {
-    "Empty message should be shown if there is no sites" in new WithServer(app = appl, port = testPort) {
-      open("/")
-      $(".emptyMessage").should(Condition.visible)
-    }
-
     "Sites should be shown in descending order of held_on_utc" in new WithServer(app = appl, port = testPort) {
       inject[Database].withConnection { implicit conn =>
         val siteRepo = inject[SiteRepo]

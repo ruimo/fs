@@ -9,17 +9,15 @@ import org.openqa.selenium.chrome.{ChromeDriver, ChromeOptions}
 import org.specs2.execute.{AsResult, Result}
 import org.specs2.specification.AroundEach
 import org.specs2.specification.AfterAll
+import org.specs2.specification.BeforeAll
 
-trait UsingSelenide extends AroundEach with AfterAll {
+trait UsingSelenide extends AroundEach {
   import UsingSelenide.BrowserKind
 
   def around[R: AsResult](r: => R): Result = {
     setUp()
-    AsResult(r)
-  }
-
-  override def afterAll(): Unit = {
-    shutdown()
+    try AsResult(r)
+    finally shutdown()
   }
 
   def setUp(): Unit = {
@@ -28,7 +26,7 @@ trait UsingSelenide extends AroundEach with AfterAll {
     browserKind match {
       case BrowserKind.Chrome =>
         Configuration.browser = Browsers.CHROME
-        WebDriverRunner.setWebDriver(chrome)
+        WebDriverRunner.setWebDriver(chrome())
     }
   }
 
@@ -44,7 +42,7 @@ trait UsingSelenide extends AroundEach with AfterAll {
 
   lazy val browserKind: BrowserKind = BrowserKind(conf)
 
-  lazy val chrome: ChromeDriver = {
+  def chrome(): ChromeDriver = {
     val opt = new ChromeOptions()
     val prefs = new java.util.HashMap[String, AnyRef]()
     prefs.put("intl.accept_languages", "ja-JP")

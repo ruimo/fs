@@ -40,3 +40,5 @@ javaOptions in Test ++= Option(System.getProperty("webdriver.chrome.driver")).ma
 javaOptions in Test ++= Option(System.getProperty("selenide.remote")).map("-Dselenide.remote=" + _).toSeq
 javaOptions in Test ++= Option(System.getProperty("test.port")).map("-Dtest.port=" + _).toSeq
 javaOptions in Test ++= Option(System.getProperty("test.host")).map("-Dtest.host=" + _).toSeq
+
+fork in Test := true
