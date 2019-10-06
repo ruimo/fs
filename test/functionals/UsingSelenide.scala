@@ -1,5 +1,7 @@
 package functionals
 
+import play.api.inject.guice.GuiceApplicationBuilder
+import play.api.{Application => PlayApp}
 import play.api.test.Helpers._
 import com.codeborne.selenide.{Browsers, Configuration, WebDriverRunner, Selenide}
 import helpers.InjectorSupport
@@ -37,6 +39,8 @@ trait UsingSelenide extends AroundEach with AfterAll {
   val testPort: Int = 9080
 
   val conf: Map[String, Any]
+
+  val appl: PlayApp = GuiceApplicationBuilder().configure(conf).build()
 
   lazy val browserKind: BrowserKind = BrowserKind(conf)
 

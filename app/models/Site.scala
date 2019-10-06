@@ -95,6 +95,8 @@ class SiteRepo @Inject() (
     'siteId -> siteId.value
   ).as(withUser.singleOpt)
 
+  def apply(siteId: SiteId)(implicit conn: Connection): Site = get(siteId).get
+
   def delete(siteId: Long)(implicit conn: Connection): Long = SQL(
     "delete from site where site_id = {siteId}"
   ).on(

@@ -14,13 +14,27 @@ case class AgentRecordId(value: Long) extends AnyVal
 
 case class AgentRecord(
   id: Option[AgentRecordId],
-  site_id: SiteId,
+  siteId: SiteId,
   agentName: String,
   agentLevel: Int,
   lifetimeAp: Long,
   distanceWalked: Int,
   phase: AgentRecordPhase,
   tsv: String,
+  createdAt: Instant
+)
+
+case class AgentRecordSumEntry(
+  agentName: String,
+  startAgentLevel: Int,
+  endAgentLevel: Int,
+  earnedAgentLevel: Int,
+  startLifetimeAp: Long,
+  endLifetimeAp: Long,
+  earnedLifetimeAp: Long,
+  startDistanceWalked: Int,
+  endDistanceWalked: Int,
+  earnedDistanceWalked: Int,
   createdAt: Instant
 )
 
@@ -134,4 +148,70 @@ class AgentRecordRepo @Inject() (
     'agentName -> agentName,
     'phase -> phase.ordinal
   ).executeUpdate()
+
+  val listParser = {
+    SqlParser.get[String]("agent_name") ~
+    SqlParser.get[Int]("start_agent_level") ~
+    SqlParser.get[Int]("end_agent_level") ~
+    SqlParser.get[Int]("agent_level_earned") ~
+    SqlParser.get[Long]("start_lifetime_ap") ~
+    SqlParser.get[Long]("end_lifetime_ap") ~
+    SqlParser.get[Long]("lifetime_ap_earned") ~
+    SqlParser.get[Int]("start_distance_walked") ~
+    SqlParser.get[Int]("end_distance_walked") ~
+    SqlParser.get[Int]("distance_walked_earned") ~
+    SqlParser.get[Instant]("created_at") map {
+      case agentName~agentLevel0~agentLevel1~agentLevelEarned~lifetimeAp0~lifetimeAp1~lifetimeApEarned~distanceWalked0~distanceWalked1~distanceWalkedEarned~createdAt =>
+        AgentRecordSumEntry(
+          agentName, agentLevel0, agentLevel1, agentLevelEarned, lifetimeAp0, lifetimeAp1, lifetimeApEarned,
+          distanceWalked0, distanceWalked1, distanceWalkedEarned, createdAt
+        )
+    }
+  }
+
+  def list(siteId: SiteId, page: Int = 0, pageSize: Int = 10, orderBy: OrderBy)(
+    implicit conn: Connection
+  ): PagedRecords[AgentRecordSumEntry] = {
+    import scala.language.postfixOps
+
+    val offset: Int = pageSize * page
+    
+    val baseSql = s"""
+      from agent_record r0, agent_record r1
+      where r0.site_id = {siteId} and r1.site_id = {siteId} and r0.agent_name = r1.agent_name and r0.phase = 0 and r1.phase = 1
+    """
+
+    val records: Seq[AgentRecordSumEntry] = SQL(
+      """
+      select
+        r0.agent_name agent_name,
+        r0.agent_level start_agent_level,
+        r1.agent_level end_agent_level,
+        r1.agent_level - r0.agent_level agent_level_earned,
+        r0.lifetime_ap start_lifetime_ap,
+        r1.lifetime_ap end_lifetime_ap,
+        r1.lifetime_ap - r0.lifetime_ap lifetime_ap_earned,
+        r0.distance_walked start_distance_walked,
+        r1.distance_walked end_distance_walked,
+        r1.distance_walked - r0.distance_walked distance_walked_earned,
+        r1.created_at created_at
+      """ + baseSql + s"""
+      order by $orderBy limit {pageSize} offset {offset}
+      """
+    ).on(
+      'siteId -> siteId.value,
+      'pageSize -> pageSize,
+      'offset -> offset
+    ).as(
+      listParser *
+    )
+
+    val count = SQL(
+      "select count(r0.agent_name) " + baseSql
+    ).on(
+      'siteId -> siteId.value
+    ).as(SqlParser.scalar[Long].single)
+
+    PagedRecords(page, pageSize, (count + pageSize - 1) / pageSize, orderBy, records)
+  }
 }

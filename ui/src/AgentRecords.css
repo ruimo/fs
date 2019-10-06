@@ -1,0 +1,25 @@
+tbody .rank {
+    text-align: right !important;
+}
+
+tbody .startLevel, tbody .endLevel, tbody .earnedLevel {
+    text-align: right !important;
+}
+
+tbody .startLevel, tbody .endLevel, tbody .earnedLevel {
+    text-align: right !important;
+}
+
+tbody .startAp, tbody .endAp, tbody .earnedAp {
+    text-align: right !important;
+}
+
+.siteNameWrapper {
+    display: inline-block;
+    vertical-align: bottom;
+}
+
+.siteName {
+    margin-right: 0.5em;
+    vertical-align: bottom;
+}

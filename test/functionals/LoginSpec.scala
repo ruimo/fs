@@ -15,7 +15,6 @@ import org.specs2.specification.AfterAll
 
 class LoginSpec extends Specification with InjectorSupport with UsingSelenide {
   override val conf: Map[String, Any] = inMemoryDatabase()
-  def appl: PlayApp = GuiceApplicationBuilder().configure(conf).build()
 
   "Login" should {
     "Show login page for admin" in new WithServer(app = appl, port = testPort) {

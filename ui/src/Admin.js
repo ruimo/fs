@@ -58,16 +58,18 @@ class Admin extends Component {
   render() {
     const body = () => {
       return (
-        <nav className="panel">
-          <p className="panel-heading">
-            {this.msg('adminMenu')}
-          </p>
-          <p className="panel-block" >
-            <a href="#siteMaintenance" className="is-fullwidth" onClick={this.startSiteMaintenance}>
-              {this.msg('siteMaintenance')}
-            </a>
-          </p>
-        </nav>
+        <div>
+          <nav className="panel">
+            <p className="panel-heading">
+              {this.msg('adminMenu')}
+            </p>
+            <p className="panel-block" >
+              <a href="#siteMaintenance" className="is-fullwidth" onClick={this.startSiteMaintenance}>
+                {this.msg('siteMaintenance')}
+              </a>
+            </p>
+          </nav>
+        </div>
       );
     };
 

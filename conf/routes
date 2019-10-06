@@ -28,6 +28,7 @@ POST    /deleteSite                 controllers.SiteController.deleteSite(siteId
 GET     /attend                     controllers.AttendController.index(siteId: Long)
 POST    /registerRecord             controllers.AgentRecordController.createAgentRecord
 GET     /registeredRecords          controllers.AgentRecordController.registeredRecords(siteId: Long, agentName: String)
+GET     /agentRecords               controllers.AgentRecordController.list(siteId: Long, page: Int ?= 0, pageSize: Int ?= 10, orderBySpec ?= "lifetime_ap_earned desc")
 
 # An example route (Prefix all API routes with apiPrefix defined in application.conf)
 GET     /version                    controllers.HomeController.version

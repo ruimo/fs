@@ -11,6 +11,7 @@ import Attend from "./Attend";
 import Site from "./Site";
 import SiteList from "./SiteList";
 import LogoffButton from "./LogoffButton";
+import AgentRecords from "./AgentRecords";
 import "@fortawesome/fontawesome-free/js/all.min.js"
 
 import './App.sass';
@@ -161,6 +162,7 @@ class App extends Component {
               <Route path="/site" exact render={() => <Site/>}/>
               <Route path="/login/:nextUrl" render={() => <Login onLoginSuccess={this.onLoginSuccess}/>}/>
               <Route path="/attend/:siteId" render={() => <Attend/>}/>
+              <Route path="/agentRecords/:siteId" render={() => <AgentRecords/>}/>
             </div>
           </main>
           <div className="footer">

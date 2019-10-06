@@ -19,7 +19,7 @@ class SiteList extends Component {
   }
 
   onSiteSelected = (siteId) => {
-    this.props.history.push("/attend/" + siteId);
+    this.props.history.push("/agentRecords/" + siteId);
   }
   
   renderRecords = () => {

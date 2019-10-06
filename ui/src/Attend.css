@@ -56,6 +56,11 @@ td.distanceWalked {
 
 .qr {
     display: table-cell;
-    vertical-align: top;
+    vertical-align: bottom;
 }
 
+.showScore {
+    padding-left: 1em;
+    display: table-cell;
+    vertical-align: bottom;
+}

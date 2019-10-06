@@ -53,7 +53,8 @@ class Attend extends Component {
           { key: 'registerBeforeRecordGuide'},
           { key: 'registerAfterRecordGuide'},
           { key: 'registerCompleted'},
-          { key: 'csvFormatError'}
+          { key: 'csvFormatError'},
+          { key: 'showScore'}
         ])
       });
     } catch (e) {
@@ -220,6 +221,10 @@ class Attend extends Component {
     });
   }
 
+  showScore = () => {
+    this.props.history.push("/agentRecords/" + this.props.match.params.siteId);
+  }
+
   render() {
     const message = this.state.message === '' ? "" :
           <article className="message is-info">
@@ -240,8 +245,8 @@ class Attend extends Component {
             <td className='phase'>{this.msg('registerBeforeRecord')}</td>
             <td className='agentName'>{startRec.agentName}</td>
             <td className='agentLevel'>{startRec.agentLevel}</td>
-            <td className='lifetimeAp'>{startRec.lifetimeAp}</td>
-            <td className='distanceWalked'>{startRec.distanceWalked}</td>
+            <td className='lifetimeAp'>{Number(startRec.lifetimeAp).toLocaleString()}</td>
+            <td className='distanceWalked'>{Number(startRec.distanceWalked).toLocaleString()}</td>
             <td className='createdAt'>{startRec.createdAt}</td>
           </tr>
         );
@@ -257,8 +262,8 @@ class Attend extends Component {
             <td className='phase'>{this.msg('registerAfterRecord')}</td>
             <td className='agentName'>{endRec.agentName}</td>
             <td className='agentLevel'>{endRec.agentLevel}</td>
-            <td className='lifetimeAp'>{endRec.lifetimeAp}</td>
-            <td className='distanceWalked'>{endRec.distanceWalked}</td>
+            <td className='lifetimeAp'>{Number(endRec.lifetimeAp).toLocaleString()}</td>
+            <td className='distanceWalked'>{Number(endRec.distanceWalked).toLocaleString()}</td>
             <td className='createdAt'>{endRec.createdAt}</td>
           </tr>
         );
@@ -296,9 +301,14 @@ class Attend extends Component {
                   </tbody>
                 </table>
               </div>
-            </div>
-            <div className="qr">
-              <QRCode value={"https://fs.ruimo.com/attend/" + this.props.match.params.siteId} size={64}/>
+
+              <div className="qr">
+                <QRCode value={"https://fs.ruimo.com/attend/" + this.props.match.params.siteId} size={64}/>
+              </div>
+
+              <div className="showScore">
+                <a className="button is-info" href="#showScore" onClick={this.showScore}>{this.msg('showScore')}</a>
+              </div>
             </div>
           </div>
           

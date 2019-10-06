@@ -10,6 +10,7 @@ case class PagedRecords[+T] (
   val nextPageExists = currentPage + 1 < pageCount
   val prevPageExists = currentPage > 0
   val isEmpty = records.isEmpty
+  val offset: Long = currentPage * pageSize
 
   def map[B](f: (T) => B): PagedRecords[B] = PagedRecords[B](
     currentPage,

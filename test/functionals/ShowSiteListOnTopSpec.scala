@@ -18,7 +18,6 @@ import com.codeborne.selenide.CollectionCondition
 
 class ShowSiteListOnTopSpec extends Specification with InjectorSupport with UsingSelenide {
   override val conf: Map[String, Any] = inMemoryDatabase()
-  def appl: PlayApp = GuiceApplicationBuilder().configure(conf).build()
 
   "Show site list on top page" should {
     "Empty message should be shown if there is no sites" in new WithServer(app = appl, port = testPort) {

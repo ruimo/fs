@@ -1,24 +1,19 @@
 package controllers
 
-import scala.util.{Try, Success, Failure}
+import scala.util.{Failure, Success, Try}
 import java.time.{Instant, LocalDateTime, ZonedDateTime}
 import java.time.format.DateTimeFormatter
 
-import play.api.data._
-import play.api.data.Forms._
 import play.api.i18n.{I18nSupport, Lang, MessagesApi}
-import play.api.libs.json.{JsObject, JsString, Json}
+import play.api.libs.json.{JsArray, JsObject, JsString, Json}
 import javax.inject._
 import play.api._
-import play.api.db.DBApi
 import play.api.mvc._
 import helpers.{PasswordHash, Tsv}
 import models._
-import play.api.data.validation.Constraints
 
 import scala.concurrent.ExecutionContext
 import play.api.db.Database
-import play.api.data.validation.Constraints
 
 import scala.collection.{immutable => imm}
 
@@ -28,6 +23,7 @@ class AgentRecordController @Inject() (
   parsers: PlayBodyParsers,
   cc: ControllerComponents,
   agentRecordRepo: AgentRecordRepo,
+  siteRepo: SiteRepo,
   implicit val ec: ExecutionContext
 ) extends AbstractController(cc) with I18nSupport {
   val logger = Logger(getClass)
@@ -92,6 +88,39 @@ class AgentRecordController @Inject() (
   def registeredRecords(siteId: Long, agentName: String) = Action { implicit req =>
     db.withConnection { implicit conn =>
       Ok(toJson(agentRecordRepo.getByAgentNameWithSite(SiteId(siteId), agentName)))
+    }
+  }
+
+  def list(siteId: Long, page: Int, pageSize: Int, orderBySpec: String) = Action { implicit req =>
+    db.withConnection { implicit conn =>
+      val site = siteRepo(SiteId(siteId))
+
+      val records = agentRecordRepo.list(SiteId(siteId), page, pageSize, OrderBy(orderBySpec))
+      Ok(
+        Json.obj(
+          "site" -> Json.obj(
+            "siteName" -> site.siteName
+          ),
+          "table" -> JsArray(
+            records.records.zipWithIndex.map { case (r, i) =>
+              Json.obj(
+                "rank" -> (records.offset + i),
+                "agentName" -> r.agentName,
+                "startLevel" -> r.startAgentLevel,
+                "endLevel" -> r.endAgentLevel,
+                "earnedLevel" -> r.earnedAgentLevel,
+                "startAp" -> r.startLifetimeAp,
+                "endAp" -> r.endLifetimeAp,
+                "earnedAp" -> r.earnedLifetimeAp,
+                "startWalked" -> r.startDistanceWalked,
+                "endWalked" -> r.endDistanceWalked,
+                "earnedWalked" -> r.earnedDistanceWalked,
+                "createdAt" -> formatter.format(ZonedDateTime.ofInstant(r.createdAt, site.heldOnZoneId))
+              )
+            }.toSeq
+          )
+        )
+      )
     }
   }
 }

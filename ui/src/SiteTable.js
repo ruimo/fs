@@ -26,7 +26,7 @@ class SiteTable extends Component {
           { key: 'deleteConfirm'},
           { key: 'agentRecordWillBeDeleted'},
           { key: 'delete'},
-          { key: 'cancel'},
+          { key: 'cancel'}
         ])
       });
     } catch (e) {
