@@ -40,7 +40,7 @@ trait UsingSelenide extends AroundEach with AfterAll {
 
   val conf: Map[String, Any]
 
-  val appl: PlayApp = GuiceApplicationBuilder().configure(conf).build()
+  lazy val appl: PlayApp = GuiceApplicationBuilder().configure(conf).build()
 
   lazy val browserKind: BrowserKind = BrowserKind(conf)
 
