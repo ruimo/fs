@@ -114,7 +114,7 @@ class AgentRecordSpec extends Specification with InjectorSupport {
         val now = Instant.now()
 
         val rec0 = repo.create(site0.id.get, "agentName0", 1, 2L, 3, AgentRecordPhase.START, "tsv", now)
-        val rec1 = repo.create(site0.id.get, "agentName0", 1, 2L, 3, AgentRecordPhase.END, "tsv", now)
+        val rec1 = repo.create(site0.id.get, "agentName3", 1, 2L, 3, AgentRecordPhase.END, "tsv", now)
 
         val rec2 = repo.create(site0.id.get, "agentName1", 1, 2L, 3, AgentRecordPhase.START, "tsv", now)
         val rec3 = repo.create(site0.id.get, "agentName1", 11, 32L, 53, AgentRecordPhase.END, "tsv", now.plusMillis(100L))
@@ -198,13 +198,13 @@ class AgentRecordSpec extends Specification with InjectorSupport {
           list(1) === e0
         }
 
-        doWith(repo.list(site0.id.get, 0, 10, OrderBy("earned_distance_walked")).records) { list =>
+        doWith(repo.list(site0.id.get, 0, 10, OrderBy("distance_walked_earned")).records) { list =>
           list.size === 2
           list(0) === e0
           list(1) === e1
         }
 
-        doWith(repo.list(site0.id.get, 0, 10, OrderBy("earned_distance_walked desc")).records) { list =>
+        doWith(repo.list(site0.id.get, 0, 10, OrderBy("distance_walked_earned desc")).records) { list =>
           list.size === 2
           list(0) === e1
           list(1) === e0
