@@ -34,7 +34,7 @@ object Tsv {
     override val time: String = raw("Time (hh:mm:ss)")
     override val lifetimeAp: Long = raw("Lifetime AP").toLong
     override val currentAp: Long = raw("Current AP").toLong
-    override val agentLevel: Int = apToLevel(currentAp)
+    override val agentLevel: Int = raw.get("Level").map(_.toInt).getOrElse(apToLevel(currentAp))
     override val distanceWalked: Int = raw("Distance Walked").toInt
   }
 

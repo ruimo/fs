@@ -8,7 +8,7 @@ import scala.collection.{immutable => imm}
 
 class TsvSpec extends Specification {
   "Tsv" should {
-    "Can read tsv" in {
+    "Can read tsv01" in {
       val tsvStr: String = new String(Files.readAllBytes(Paths.get("testdata/tsv/case01.tsv")), "utf-8")
       val tsv = Tsv.parse(tsvStr)
       tsv("Agent Name") === "shanai"
@@ -28,6 +28,33 @@ class TsvSpec extends Specification {
 
       tsv("Distance Walked") === "8479"
       tsv.distanceWalked === 8479
+
+      tsv.agentLevel === 15
+    }
+
+    "Can read tsv02" in {
+      val tsvStr: String = new String(Files.readAllBytes(Paths.get("testdata/tsv/case02.tsv")), "utf-8")
+      val tsv = Tsv.parse(tsvStr)
+      tsv("Agent Name") === "shanai"
+      tsv.agentName === "shanai"
+
+      tsv("Date (yyyy-mm-dd)") === "2019-10-06"
+      tsv.date === "2019-10-06"
+
+      tsv("Time (hh:mm:ss)") === "14:34:18"
+      tsv.time === "14:34:18"
+
+      tsv("Lifetime AP") === "312897982"
+      tsv.lifetimeAp === 312897982L
+
+      tsv("Current AP") === "31235454"
+      tsv.currentAp === 31235454L
+
+      tsv("Distance Walked") === "8506"
+      tsv.distanceWalked === 8506
+
+      tsv("Level") === "14"
+      tsv.agentLevel === 14
     }
 
     "Ap to level" in {
