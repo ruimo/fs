@@ -23,3 +23,11 @@ tbody .startAp, tbody .endAp, tbody .earnedAp {
     margin-right: 0.5em;
     vertical-align: bottom;
 }
+
+.paginatorWrapper {
+    margin-top: 0.5em;
+}
+
+.pagingButton {
+    border: none !important;
+}

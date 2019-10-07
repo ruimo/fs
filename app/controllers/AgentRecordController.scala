@@ -98,6 +98,13 @@ class AgentRecordController @Inject() (
       val records = agentRecordRepo.list(SiteId(siteId), page, pageSize, OrderBy(orderBySpec))
       Ok(
         Json.obj(
+          "pageControl" -> Json.obj(
+            "currentPage" -> records.currentPage,
+            "pageSize" -> records.pageSize,
+            "pageCount" -> records.pageCount,
+            "nextPageExists" -> records.nextPageExists,
+            "prevPageExists" -> records.prevPageExists
+          ),
           "site" -> Json.obj(
             "siteName" -> site.siteName
           ),

@@ -11,7 +11,14 @@ class AgentRecords extends Component {
       globalError: '',
       siteName: '',
       messages: MessagesLoader.Empty,
-      records: []
+      records: [],
+      pageControl: {
+        currentPage: 0,
+        pageSize: 10,
+        pageCount: 0,
+        nextPageExists: false,
+        prevPageExists: false
+      }
     };
   }
 
@@ -53,6 +60,7 @@ class AgentRecords extends Component {
       if (resp.status === 200) {
         const json = await resp.json();
         this.setState({
+          pageControl: json.pageControl,
           siteName: json.site.siteName,
           records: json.table
         });
@@ -128,6 +136,39 @@ class AgentRecords extends Component {
             </tbody>
           </table>;
 
+    const paginator = 
+          <nav className="pagination" role="navigation" aria-label="pagination">
+            <a className="pagination-previous pagingButton" disabled={!this.state.pageControl.prevPageExists}>
+              <i className="fas fa-chevron-circle-left fa-2x"></i>
+            </a>
+            <a className="pagination-next pagingButton" disabled={!this.state.pageControl.nextPageExists}>
+              <i className="fas fa-chevron-circle-right fa-2x"></i>
+            </a>
+            <ul className="pagination-list">
+              <li>
+                <a className="pagination-link" aria-label="Goto page 1">1</a>
+              </li>
+              <li>
+                <span className="pagination-ellipsis">&hellip;</span>
+              </li>
+              <li>
+                <a className="pagination-link" aria-label="Goto page 45">45</a>
+              </li>
+              <li>
+                <a className="pagination-link is-current" aria-label="Page 46" aria-current="page">46</a>
+              </li>
+              <li>
+                <a className="pagination-link" aria-label="Goto page 47">47</a>
+              </li>
+              <li>
+                <span className="pagination-ellipsis">&hellip;</span>
+              </li>
+              <li>
+                <a className="pagination-link" aria-label="Goto page 86">86</a>
+              </li>
+            </ul>
+          </nav>;
+
     return (
       <div className="attend">
         {globalError}
@@ -147,7 +188,12 @@ class AgentRecords extends Component {
           </div>
 
           <div className="panel-block">
-            {table}
+            <div className="recordsWrapper">
+              <div className="tableWrapper">
+                {table}
+              </div>
+              <div className="paginatorWrapper">{paginator}</div>
+            </div>
           </div>
         </nav>
       </div>
