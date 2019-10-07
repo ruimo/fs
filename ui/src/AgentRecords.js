@@ -61,6 +61,7 @@ class AgentRecords extends Component {
         const json = await resp.json();
         this.setState({
           pageControl: json.pageControl,
+          pagination: json.pagination,
           siteName: json.site.siteName,
           records: json.table
         });
@@ -136,7 +137,7 @@ class AgentRecords extends Component {
             </tbody>
           </table>;
 
-    const paginator = 
+    const paginator = this.state.pagination === undefined ? "" :
           <nav className="pagination" role="navigation" aria-label="pagination">
             <a className="pagination-previous pagingButton" disabled={!this.state.pageControl.prevPageExists}>
               <i className="fas fa-chevron-circle-left fa-2x"></i>
