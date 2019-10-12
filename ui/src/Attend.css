@@ -60,9 +60,6 @@ td.distanceWalked {
 }
 
 .showScore {
-    padding-left: 1em;
-    display: table-cell;
-    vertical-align: bottom;
 }
 
 .agentNameWrapper {
