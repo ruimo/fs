@@ -59,7 +59,7 @@ class ShowResultWithOneAttendeeSpec extends Specification with InjectorSupport w
         $(".emptyMessage").text === msg("recordEmpty")
 
         open("/attend/" + site.id.get.value)
-        $(".dateTime").text === dateTime
+        $(".dateTime").shouldHave(Condition.text(dateTime))
         $(".timezone").text === TimeZoneInfo.tableByZoneId(zoneId).view
         $(".notification").text === msg("registerBeforeRecordGuide")
         $(".startRecord").getAttribute("disabled") === "true"
