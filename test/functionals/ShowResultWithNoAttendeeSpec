@@ -1,0 +1,48 @@
+package functionals
+
+import play.api.i18n.{MessagesApi}
+import models._
+import org.specs2.mutable.Specification
+import play.api.test.WithServer
+import play.api.test.Helpers._
+import com.codeborne.selenide.Selenide._
+import com.codeborne.selenide.{Browsers, Condition, Configuration, WebDriverRunner}
+import helpers.{Helper, InjectorSupport}
+import models.{UserRepo, UserRole}
+import org.fluentlenium.core.conditions.Conditions
+import play.api.db.Database
+import java.time.Instant
+import java.time.ZoneId
+import com.codeborne.selenide.CollectionCondition
+import play.api.db.Database
+import play.api.i18n.Lang
+
+class ShowResultWithNoAttendeeSpec extends Specification with InjectorSupport with UsingSelenide {
+  override val conf: Map[String, Any] = inMemoryDatabase()
+
+  "Can attend." should {
+    "No attendee is registered." in new WithServer(app = appl, port = testPort) {
+      inject[Database].withConnection { implicit conn =>
+        implicit val lang = Lang("ja")
+        val msg = inject[MessagesApi]
+        val siteRepo = inject[SiteRepo]
+        val userRepo = inject[UserRepo]
+
+        val user = userRepo.create(
+          Helper.TestUserName, "set@your.mail", Helper.TestHash, Helper.TestSalt, UserRole.ADMIN
+        )
+
+        val site = siteRepo.create(
+          "site", heldOnUtc = Instant.ofEpochMilli(3L), heldOnZoneId = ZoneId.systemDefault,
+          owner = user.id.get, now = Instant.ofEpochMilli(2L)
+        )
+
+        open("/agentRecords/" + site.id.get.value)
+        $(".siteName").text === "site"
+        $(".emptyMessage").text === msg("recordEmpty")
+        $(".pagination-previous").getAttribute("disabled") === "true"
+        $(".pagination-next").getAttribute("disabled") === "true"
+      }
+    }
+  }
+}

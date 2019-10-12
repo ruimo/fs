@@ -35,6 +35,7 @@ class AgentRecordController @Inject() (
 
       key.toString -> Json.obj(
         "id" -> ar.id.get.value,
+        "faction" -> ar.faction,
         "agentName" -> ar.agentName,
         "agentLevel" -> ar.agentLevel,
         "lifetimeAp" -> ar.lifetimeAp.toString,
@@ -65,10 +66,11 @@ class AgentRecordController @Inject() (
       case Success(tsv) =>
         db.withConnection { implicit conn =>
           if (! overwrite) {
-            if (agentRecordRepo.getByAgentNameWithSite(siteId, tsv.agentName).get(phase).isDefined) Conflict("")
+            if (agentRecordRepo.getByAgentNameWithSite(siteId, tsv.agentName).get(phase).isDefined)
+              Conflict(Json.obj("agentName" -> tsv.agentName))
             else {
               agentRecordRepo.create(
-                siteId, tsv.agentName, tsv.agentLevel, tsv.lifetimeAp, tsv.distanceWalked, phase, tsvStr
+                siteId, tsv.faction, tsv.agentName, tsv.agentLevel, tsv.lifetimeAp, tsv.distanceWalked, phase, tsvStr
               )
 
               Ok(toJson(agentRecordRepo.getByAgentNameWithSite(siteId, tsv.agentName)))
@@ -76,7 +78,7 @@ class AgentRecordController @Inject() (
           } else {
             agentRecordRepo.delete(siteId, tsv.agentName, phase)
             agentRecordRepo.create(
-              siteId, tsv.agentName, tsv.agentLevel, tsv.lifetimeAp, tsv.distanceWalked, phase, tsvStr
+              siteId, tsv.faction, tsv.agentName, tsv.agentLevel, tsv.lifetimeAp, tsv.distanceWalked, phase, tsvStr
             )
 
             Ok(toJson(agentRecordRepo.getByAgentNameWithSite(siteId, tsv.agentName)))
@@ -92,18 +94,32 @@ class AgentRecordController @Inject() (
   }
 
   def list(siteId: Long, page: Int, pageSize: Int, orderBySpec: String) = Action { implicit req =>
+    print("page = " + page)
     db.withConnection { implicit conn =>
       val site = siteRepo(SiteId(siteId))
 
-      val records = agentRecordRepo.list(SiteId(siteId), page, pageSize, OrderBy(orderBySpec))
+      val records: PagedRecords[AgentRecordSumEntry] = agentRecordRepo.list(SiteId(siteId), page, pageSize, OrderBy(orderBySpec))
+      val pagination: Option[Pagination] = Pagination.get(records)
       Ok(
+        pagination.map { p =>
+          Json.obj(
+            "pagination" -> Json.obj(
+              "topButtonExists" -> p.topButtonExists,
+              "lastButtonExists" -> p.lastButtonExists,
+              "startPage" -> p.startPage,
+              "showPageCount" -> p.showPageCount
+            )
+          )
+        }.getOrElse(Json.obj()) ++
         Json.obj(
           "pageControl" -> Json.obj(
             "currentPage" -> records.currentPage,
             "pageSize" -> records.pageSize,
             "pageCount" -> records.pageCount,
             "nextPageExists" -> records.nextPageExists,
-            "prevPageExists" -> records.prevPageExists
+            "prevPageExists" -> records.prevPageExists,
+            "orderByCol" -> records.orderBy.columnName,
+            "orderBySort" -> records.orderBy.order.toString
           ),
           "site" -> Json.obj(
             "siteName" -> site.siteName
@@ -112,7 +128,9 @@ class AgentRecordController @Inject() (
             records.records.zipWithIndex.map { case (r, i) =>
               Json.obj(
                 "rank" -> (records.offset + i),
+                "faction" -> r.faction,
                 "agentName" -> r.agentName,
+                "faction" -> r.faction,
                 "startLevel" -> r.startAgentLevel,
                 "endLevel" -> r.endAgentLevel,
                 "earnedLevel" -> r.earnedAgentLevel,

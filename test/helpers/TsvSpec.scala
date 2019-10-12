@@ -14,6 +14,9 @@ class TsvSpec extends Specification {
       tsv("Agent Name") === "shanai"
       tsv.agentName === "shanai"
 
+      tsv("Agent Faction") === "Enlightened"
+      tsv.faction === "Enlightened"
+
       tsv("Date (yyyy-mm-dd)") === "2019-09-22"
       tsv.date === "2019-09-22"
 

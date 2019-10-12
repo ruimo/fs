@@ -36,6 +36,7 @@ create table agent_record (
   agent_record_id bigint not null,
   site_id bigint not null,
   agent_name varchar(256),
+  faction varchar(32),
   agent_level integer not null,
   lifetime_ap bigint not null,
   distance_walked integer not null,

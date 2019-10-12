@@ -15,6 +15,7 @@ case class AgentRecordId(value: Long) extends AnyVal
 case class AgentRecord(
   id: Option[AgentRecordId],
   siteId: SiteId,
+  faction: String,
   agentName: String,
   agentLevel: Int,
   lifetimeAp: Long,
@@ -25,6 +26,7 @@ case class AgentRecord(
 )
 
 case class AgentRecordSumEntry(
+  faction: String,
   agentName: String,
   startAgentLevel: Int,
   endAgentLevel: Int,
@@ -45,6 +47,7 @@ class AgentRecordRepo @Inject() (
   val simple = {
     SqlParser.get[Option[Long]]("agent_record.agent_record_id") ~
     SqlParser.get[Long]("agent_record.site_id") ~
+    SqlParser.get[String]("agent_record.faction") ~
     SqlParser.get[String]("agent_record.agent_name") ~
     SqlParser.get[Int]("agent_record.agent_level") ~
     SqlParser.get[Long]("agent_record.lifetime_ap") ~
@@ -52,9 +55,9 @@ class AgentRecordRepo @Inject() (
     SqlParser.get[Int]("agent_record.phase") ~
     SqlParser.get[String]("agent_record.tsv") ~
     SqlParser.get[Instant]("agent_record.created_at") map {
-      case id~siteId~agentName~agentLevel~lifetimeAp~distanceWalked~phase~tsv~createdAt =>
+      case id~siteId~faction~agentName~agentLevel~lifetimeAp~distanceWalked~phase~tsv~createdAt =>
         AgentRecord(
-          id.map(AgentRecordId.apply), SiteId(siteId), agentName, agentLevel, lifetimeAp,
+          id.map(AgentRecordId.apply), SiteId(siteId), faction, agentName, agentLevel, lifetimeAp,
           distanceWalked, AgentRecordPhase.byIndex(phase), tsv, createdAt
         )
     }
@@ -65,20 +68,21 @@ class AgentRecordRepo @Inject() (
   }
 
   def create(
-    siteId: SiteId, agentName: String, agentLevel: Int, lifetimeAp: Long, distanceWalked: Int,
+    siteId: SiteId, faction: String, agentName: String, agentLevel: Int, lifetimeAp: Long, distanceWalked: Int,
     phase: AgentRecordPhase, tsv: String, createdAt: Instant = Instant.now()
   )(implicit conn: Connection): AgentRecord = ExceptionMapper.mapException {
     SQL(
       """
       insert into agent_record (
-        agent_record_id, site_id, agent_name, agent_level, lifetime_ap, distance_walked, phase, tsv, created_at
+        agent_record_id, site_id, faction, agent_name, agent_level, lifetime_ap, distance_walked, phase, tsv, created_at
       ) values (
         (select nextval('agent_record_seq')),
-        {siteId}, {agentName}, {agentLevel}, {lifetimeAp}, {distanceWalked}, {phase}, {tsv}, {createdAt}
+        {siteId}, {faction}, {agentName}, {agentLevel}, {lifetimeAp}, {distanceWalked}, {phase}, {tsv}, {createdAt}
       )
       """
     ).on(
       'siteId -> siteId.value,
+      'faction -> faction,
       'agentName -> agentName,
       'agentLevel -> agentLevel,
       'lifetimeAp -> lifetimeAp,
@@ -91,7 +95,7 @@ class AgentRecordRepo @Inject() (
     val id: Long = SQL("select currval('agent_record_seq')").as(SqlParser.scalar[Long].single)
 
     AgentRecord(
-      Some(AgentRecordId(id)), siteId, agentName, agentLevel, lifetimeAp, distanceWalked, phase, tsv, createdAt
+      Some(AgentRecordId(id)), siteId, faction, agentName, agentLevel, lifetimeAp, distanceWalked, phase, tsv, createdAt
     )
   }
 
@@ -150,6 +154,7 @@ class AgentRecordRepo @Inject() (
   ).executeUpdate()
 
   val listParser = {
+    SqlParser.get[String]("faction") ~
     SqlParser.get[String]("agent_name") ~
     SqlParser.get[Int]("start_agent_level") ~
     SqlParser.get[Int]("end_agent_level") ~
@@ -161,9 +166,9 @@ class AgentRecordRepo @Inject() (
     SqlParser.get[Int]("end_distance_walked") ~
     SqlParser.get[Int]("distance_walked_earned") ~
     SqlParser.get[Instant]("created_at") map {
-      case agentName~agentLevel0~agentLevel1~agentLevelEarned~lifetimeAp0~lifetimeAp1~lifetimeApEarned~distanceWalked0~distanceWalked1~distanceWalkedEarned~createdAt =>
+      case faction~agentName~agentLevel0~agentLevel1~agentLevelEarned~lifetimeAp0~lifetimeAp1~lifetimeApEarned~distanceWalked0~distanceWalked1~distanceWalkedEarned~createdAt =>
         AgentRecordSumEntry(
-          agentName, agentLevel0, agentLevel1, agentLevelEarned, lifetimeAp0, lifetimeAp1, lifetimeApEarned,
+          faction, agentName, agentLevel0, agentLevel1, agentLevelEarned, lifetimeAp0, lifetimeAp1, lifetimeApEarned,
           distanceWalked0, distanceWalked1, distanceWalkedEarned, createdAt
         )
     }
@@ -184,6 +189,7 @@ class AgentRecordRepo @Inject() (
     val records: Seq[AgentRecordSumEntry] = SQL(
       """
       select
+        r0.faction faction,
         r0.agent_name agent_name,
         r0.agent_level start_agent_level,
         r1.agent_level end_agent_level,

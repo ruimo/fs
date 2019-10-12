@@ -43,7 +43,6 @@ class AttendController @Inject() (
           )
         case Some(site) =>
           val tzInfo = TimeZoneInfo.tableByZoneId(site.heldOnZoneId);
-
           Ok(
             Json.obj(
               "siteId" -> site.id.get.value,

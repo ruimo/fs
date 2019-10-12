@@ -31,3 +31,21 @@ tbody .startAp, tbody .endAp, tbody .earnedAp {
 .pagingButton {
     border: none !important;
 }
+
+.orderBy {
+    margin-right: 5px;
+    color: cyan;
+}
+
+.ordered {
+    background-color: blue;
+}
+
+.sortable {
+    cursor: pointer;
+}
+
+.sortable:hover {
+    background-color: #0099FF;
+}
+

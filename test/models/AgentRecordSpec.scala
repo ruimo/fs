@@ -30,10 +30,11 @@ class AgentRecordSpec extends Specification with InjectorSupport {
         val site = inject[SiteRepo].create("site0", Instant.now(), ZoneId.systemDefault(), user.id.get)
 
         val now = Instant.now()
-        val rec = repo.create(site.id.get, "agentName", 1, 2L, 3, AgentRecordPhase.START, "tsv", now)
+        val rec = repo.create(site.id.get, "enl", "agentName", 1, 2L, 3, AgentRecordPhase.START, "tsv", now)
         val map = repo.getByAgentNameWithSite(site.id.get, "agentName")
         map.size === 1
         doWith(map(AgentRecordPhase.START)) { case (ar, site) =>
+          ar.faction === "enl"
           ar.agentName === "agentName"
           ar.agentLevel === 1
           ar.lifetimeAp === 2
@@ -56,7 +57,7 @@ class AgentRecordSpec extends Specification with InjectorSupport {
         val site2 = inject[SiteRepo].create("site1", Instant.now(), ZoneId.systemDefault(), user.id.get)
 
         val now = Instant.now()
-        val rec = repo.create(site.id.get, "agentName", 1, 2L, 3, AgentRecordPhase.START, "tsv", now)
+        val rec = repo.create(site.id.get, "enl", "agentName", 1, 2L, 3, AgentRecordPhase.START, "tsv", now)
         repo.delete(site.id.get, "agentName", AgentRecordPhase.END)
         repo.getByAgentNameWithSite(site.id.get, "agentName").size === 1
         repo.getByAgentNameWithSite(site2.id.get, "agentName").size === 0
@@ -74,15 +75,15 @@ class AgentRecordSpec extends Specification with InjectorSupport {
         val now = Instant.now()
         repo.list(site.id.get, 0, 10, OrderBy("agent_name")).records.isEmpty === true
 
-        val rec0 = repo.create(site.id.get, "agentName", 1, 2L, 3, AgentRecordPhase.START, "tsv", now)
+        val rec0 = repo.create(site.id.get, "enl", "agentName", 1, 2L, 3, AgentRecordPhase.START, "tsv", now)
         repo.list(site.id.get, 0, 10, OrderBy("agent_name")).records.isEmpty === true
 
-        val rec1 = repo.create(site.id.get, "agentName1", 1, 2L, 3, AgentRecordPhase.END, "tsv", now)
+        val rec1 = repo.create(site.id.get, "enl", "agentName1", 1, 2L, 3, AgentRecordPhase.END, "tsv", now)
         repo.list(site.id.get, 0, 10, OrderBy("agent_name")).records.isEmpty === true
 
         val site2 = inject[SiteRepo].create("site1", Instant.now(), ZoneId.systemDefault(), user.id.get)
-        val rec2 = repo.create(site2.id.get, "agentName1", 1, 2L, 3, AgentRecordPhase.START, "tsv", now)
-        val rec4 = repo.create(site2.id.get, "agentName1", 2, 4L, 6, AgentRecordPhase.END, "tsv", now.plusMillis(100L))
+        val rec2 = repo.create(site2.id.get, "enl", "agentName1", 1, 2L, 3, AgentRecordPhase.START, "tsv", now)
+        val rec4 = repo.create(site2.id.get, "enl", "agentName1", 2, 4L, 6, AgentRecordPhase.END, "tsv", now.plusMillis(100L))
 
         repo.list(site.id.get, 0, 10, OrderBy("agent_name")).records.isEmpty === true
 
@@ -113,17 +114,17 @@ class AgentRecordSpec extends Specification with InjectorSupport {
         val site1 = inject[SiteRepo].create("site1", Instant.now(), ZoneId.systemDefault(), user.id.get)
         val now = Instant.now()
 
-        val rec0 = repo.create(site0.id.get, "agentName0", 1, 2L, 3, AgentRecordPhase.START, "tsv", now)
-        val rec1 = repo.create(site0.id.get, "agentName3", 1, 2L, 3, AgentRecordPhase.END, "tsv", now)
+        val rec0 = repo.create(site0.id.get, "enl", "agentName0", 1, 2L, 3, AgentRecordPhase.START, "tsv", now)
+        val rec1 = repo.create(site0.id.get, "enl", "agentName3", 1, 2L, 3, AgentRecordPhase.END, "tsv", now)
 
-        val rec2 = repo.create(site0.id.get, "agentName1", 1, 2L, 3, AgentRecordPhase.START, "tsv", now)
-        val rec3 = repo.create(site0.id.get, "agentName1", 11, 32L, 53, AgentRecordPhase.END, "tsv", now.plusMillis(100L))
+        val rec2 = repo.create(site0.id.get, "enl", "agentName1", 1, 2L, 3, AgentRecordPhase.START, "tsv", now)
+        val rec3 = repo.create(site0.id.get, "enl", "agentName1", 11, 32L, 53, AgentRecordPhase.END, "tsv", now.plusMillis(100L))
 
-        val rec5 = repo.create(site0.id.get, "agentName2", 10, 20L, 30, AgentRecordPhase.START, "tsv", now.plusMillis(123L))
-        val rec6 = repo.create(site0.id.get, "agentName2", 100, 49L, 90, AgentRecordPhase.END, "tsv", now.plusMillis(50L))
+        val rec5 = repo.create(site0.id.get, "enl", "agentName2", 10, 20L, 30, AgentRecordPhase.START, "tsv", now.plusMillis(123L))
+        val rec6 = repo.create(site0.id.get, "enl", "agentName2", 100, 49L, 90, AgentRecordPhase.END, "tsv", now.plusMillis(50L))
 
-        val rec7 = repo.create(site1.id.get, "agentName2", 110, 120L, 130, AgentRecordPhase.START, "tsv", now.plusMillis(12L))
-        val rec8 = repo.create(site1.id.get, "agentName2", 200, 190L, 170, AgentRecordPhase.END, "tsv", now.plusMillis(5L))
+        val rec7 = repo.create(site1.id.get, "enl", "agentName2", 110, 120L, 130, AgentRecordPhase.START, "tsv", now.plusMillis(12L))
+        val rec8 = repo.create(site1.id.get, "enl", "agentName2", 200, 190L, 170, AgentRecordPhase.END, "tsv", now.plusMillis(5L))
 
         // site0
         // agent      startLv endLv earnedLv startAp endAp earnedAp startDistWlk endDistWlk earnedDistWlk createAt
@@ -135,6 +136,7 @@ class AgentRecordSpec extends Specification with InjectorSupport {
         // agentName2 110     200   90       120     190   70       130          170        40            now + 5
 
         val e0 = AgentRecordSumEntry(
+          "enl",
           "agentName1",
           1, 11, 10,
           2, 32, 30,
@@ -143,6 +145,7 @@ class AgentRecordSpec extends Specification with InjectorSupport {
         )
 
         val e1 = AgentRecordSumEntry(
+          "enl",
           "agentName2",
           10, 100, 90,
           20, 49, 29,

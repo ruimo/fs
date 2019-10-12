@@ -22,12 +22,38 @@ class Attend extends Component {
       records: {},
       recordAlreadyExists: '',
       guide: '',
-      showHelp: false
+      showHelp: false,
+      clearAgentNameConfirm: false
     };
   }
   
   msg = (key) => {
     return this.state.messages(key);
+  }
+
+  retrieveAgentRecord = async(agentName) => {
+    try {
+      const resp = await fetch(
+        "/registeredRecords?siteId=" + this.props.match.params.siteId + "&agentName=" + encodeURI(agentName)
+      );
+        
+      if (resp.status === 200) {
+        const json = await resp.json();
+        this.setState({
+          records: json,
+        });
+      } else {
+        console.log("error: " + resp.status);
+        this.setState({
+          globalError: this.msg('error.unknown')
+        });
+      }
+    } catch (e) {
+      console.log("Error: " + JSON.stringify(e));
+      this.setState({
+        globalError: this.msg('error.unknown')
+      });
+    }
   }
 
   componentDidMount = async() => {
@@ -54,7 +80,11 @@ class Attend extends Component {
           { key: 'registerAfterRecordGuide'},
           { key: 'registerCompleted'},
           { key: 'csvFormatError'},
-          { key: 'showScore'}
+          { key: 'showScore'},
+          { key: 'abbrevFaction'},
+          { key: 'clear'},
+          { key: 'clearAgentNameGuide'},
+          { key: 'clearAgentNameGuide2'}
         ])
       });
     } catch (e) {
@@ -65,33 +95,11 @@ class Attend extends Component {
     }
 
     const agentName = Cookies.get('agentName', {path: '/attend'});
-    if (agentName === undefined) {
-      this.setState({
-        guide: this.msg('registerBeforeRecordGuide')
-      });
-    } else {
-      try {
-        const resp = await fetch(
-          "/registeredRecords?siteId=" + this.props.match.params.siteId + "&agentName=" + encodeURI(agentName)
-        );
-        
-        if (resp.status === 200) {
-          const json = await resp.json();
-          this.setState({
-            records: json,
-          });
-        } else {
-          console.log("error: " + resp.status);
-          this.setState({
-            globalError: this.msg('error.unknown')
-          });
-        }
-      } catch (e) {
-        console.log("Error: " + JSON.stringify(e));
-        this.setState({
-          globalError: this.msg('error.unknown')
-        });
-      }
+    this.setState({
+      agentName
+    });
+    if (agentName !== undefined) {
+      this.retrieveAgentRecord(agentName);
     }
 
     try {
@@ -143,13 +151,16 @@ class Attend extends Component {
 
     if (resp.status === 200) {
       const json = await resp.json();
-      Cookies.set("agentName", json[phase].agentName, {expires: 7, path: '/attend'});
+      console.log("json: " + JSON.stringify(json));
+      const agentName = json[phase].agentName;
+      Cookies.set("agentName", agentName, {expires: 7, path: '/attend'});
 
       this.setState({
         records: json,
         tsv: '',
         globalError: '',
-        message: ''
+        message: '',
+        agentName
       });
     } else if (resp.status === 400) {
       this.setState({
@@ -157,10 +168,15 @@ class Attend extends Component {
         message: ''
       });
     } else if (resp.status === 409) {
+      const json = await resp.json();
+      const agentName = json.agentName;
+
+      this.retrieveAgentRecord(agentName);
       this.setState({
         recordAlreadyExists: phase,
         globalError: '',
-        message: ''
+        message: '',
+        agentName
       });
     } else {
       this.setState({
@@ -225,6 +241,84 @@ class Attend extends Component {
     this.props.history.push("/agentRecords/" + this.props.match.params.siteId);
   }
 
+  shouldDisableStartRecordButton = () => {
+    return this.state.tsv === '';
+  }
+
+  shouldDisableEndRecordButton = () => {
+    return this.state.tsv === '';
+  }
+
+  shouldStartRecordButtonShown = () => {
+    if (this.state.agentName === undefined) {
+      return true;
+    } else {
+      if (this.state.records.START === undefined) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
+
+  shouldEndRecordButtonShown = () => {
+    if (this.state.agentName === undefined) {
+      return false;
+    } else {
+      if (this.state.records.START === undefined) {
+        return false;
+      } else if (this.state.records.END === undefined) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
+
+  notification = () => {
+    if (this.state.agentName === undefined) {
+      return (
+        <div className="notification is-info">
+        {this.msg('registerBeforeRecordGuide')}
+        </div>
+      );
+    } else {
+      if (this.state.records.START === undefined) {
+        return (
+          <div className="notification is-info">
+            {this.msg('registerBeforeRecordGuide')}
+          </div>
+        );
+      } if (this.state.records.END === undefined) {
+        return (
+          <div className="notification is-info">
+            {this.msg('registerAfterRecordGuide')}
+          </div>
+        );
+      } else {
+        return (
+          <div className="notification is-info">
+          {this.msg('registerCompleted')}
+          </div>
+        );
+      }
+    }
+  }
+
+  clearAgentName = () => {
+    Cookies.remove("agentName", {path: '/attend'});
+
+    this.setState({
+      agentName: undefined,
+      clearAgentNameConfirm: false
+    });
+  }
+
+  shouldShowAgentRecord = () => {
+    if (this.state.agentName === undefined) return false;
+    else return this.state.records.START !== undefined || this.state.records.END !== undefined;
+  }
+
   render() {
     const message = this.state.message === '' ? "" :
           <article className="message is-info">
@@ -243,6 +337,7 @@ class Attend extends Component {
         return (
           <tr>
             <td className='phase'>{this.msg('registerBeforeRecord')}</td>
+            <td className='faction'>{startRec.faction}</td>
             <td className='agentName'>{startRec.agentName}</td>
             <td className='agentLevel'>{startRec.agentLevel}</td>
             <td className='lifetimeAp'>{Number(startRec.lifetimeAp).toLocaleString()}</td>
@@ -260,6 +355,7 @@ class Attend extends Component {
         return (
           <tr>
             <td className='phase'>{this.msg('registerAfterRecord')}</td>
+            <td className='faction'>{endRec.faction}</td>
             <td className='agentName'>{endRec.agentName}</td>
             <td className='agentLevel'>{endRec.agentLevel}</td>
             <td className='lifetimeAp'>{Number(endRec.lifetimeAp).toLocaleString()}</td>
@@ -292,11 +388,11 @@ class Attend extends Component {
                   <tbody>
                     <tr>
                       <td>{this.msg('dateTime')}</td>
-                      <td>{this.state.heldOn}</td>
+                      <td className="dateTime">{this.state.heldOn}</td>
                     </tr>
                     <tr>
                       <td>{this.msg('timeZone')}</td>
-                      <td>{this.state.timezone}</td>
+                      <td className="timezone">{this.state.timezone}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -314,11 +410,18 @@ class Attend extends Component {
           
           <div className="panel-block">
             <div className="wrapper">
-              { this.state.guide !== '' ?
-                <div className="notification is-info">
-                  {this.state.guide}
-                </div>:
-                ""}
+              <div className="agentNameWrapper">
+                <span className="header">{this.msg('agentName')}</span>
+                <span className={cx("body tag is-info is-large", {'is-hidden': this.state.agentName === undefined})}>
+                  {this.state.agentName}
+                </span>
+                <a href="#clearAgentName"
+                   className={cx("clear button is-danger", {'is-hidden': this.state.agentName === undefined})}
+                   onClick={() => this.setState({clearAgentNameConfirm: true})}>
+                  {this.msg('clear')}
+                </a>
+              </div>
+              { this.notification() }
 
               <div id="agentRecordWrapper" className="wrapper">
                 <label className="label" htmlFor="tsv">
@@ -333,13 +436,15 @@ class Attend extends Component {
               </div>
 
               <div id="buttons">
-                <a href="#registerBeforeRecord" className="button" disabled={this.state.tsv === ''}
-                   onClick={(e) => this.registerRecord('START')}>
+                <a href="#registerBeforeRecord"
+                   className={cx("button startRecord", {'is-hidden': !this.shouldStartRecordButtonShown()})}
+                   onClick={(e) => this.registerRecord('START')} disabled={this.shouldDisableStartRecordButton()}>
                   {this.msg('registerBeforeRecord')}
                 </a>
                 &nbsp;
-                <a href="#registerAfterRecord" className="button" disabled={this.state.tsv === ''}
-                   onClick={(e) => this.registerRecord('END')}>
+                <a href="#registerAfterRecord"
+                   className={cx("button endRecord", {'is-hidden': !this.shouldEndRecordButtonShown()})}
+                   onClick={(e) => this.registerRecord('END')} disabled={this.shouldDisableEndRecordButton()}>
                   {this.msg('registerAfterRecord')}
                 </a>
               </div>
@@ -347,11 +452,12 @@ class Attend extends Component {
           </div>
         </nav>
 
-        { this.state.records.START === undefined && this.state.records.END === undefined ? "" :
-          <table className="table">
+        { !this.shouldShowAgentRecord() ? "" :
+          <table className="table records">
             <thead>
               <tr>
                 <th></th>
+                <th>{this.msg('abbrevFaction')}</th>
                 <th>{this.msg('agentName')}</th>
                 <th>{this.msg('agentLevel')}</th>
                 <th>{this.msg('lifetimeAp')}</th>
@@ -367,7 +473,7 @@ class Attend extends Component {
         }
 
         { /* Modals */ }
-        <div className={cx("modal", {'is-active': this.state.recordAlreadyExists !== ''})}>
+        <div className={cx("modal recordOverwriteConfirm", {'is-active': this.state.recordAlreadyExists !== ''})}>
           <div className="modal-background"></div>
           <div className="modal-content">
             <div>
@@ -376,11 +482,7 @@ class Attend extends Component {
                 this.msg('afterRecordAlreadyExists') }
             </div>
             <div className='dialogButtons'>
-              <a href="#overwrite" className="button is-danger"
-                 onClick={(e) => {this.overwriteRecord(this.state.recordAlreadyExists);}}>
-                {this.msg('overwrite')}
-              </a>&nbsp;
-              <a href="#cancel" className="button" onClick={(e) => {this.cancelRegisterRecord(e);}}>
+              <a href="#cancel" className="button cancel" onClick={(e) => {this.cancelRegisterRecord(e);}}>
                 {this.msg('cancel')}
               </a>
             </div>
@@ -402,6 +504,34 @@ class Attend extends Component {
                 <a href="#close-help" className="button close is-info"
                    onClick={(e) => {this.setState({showHelp: false});}}>
                   <i className="fas fa-times-circle"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+          <button className="modal-close is-large" aria-label="close" onClick={(e) => {this.setState({showHelp: false});}}></button>
+        </div>
+
+        <div className={cx("modal clearAgentNameConfirm", {'is-active': this.state.clearAgentNameConfirm === true})}>
+          <div className="modal-background"></div>
+          <div className="modal-content">
+            <div className='dialogButtons'>
+              <div>
+                <div>
+                  {this.msg('clearAgentNameGuide')}
+                </div>
+                <div>
+                  {this.msg('clearAgentNameGuide2')}
+                </div>
+              </div>
+              <div>
+                <a href="#close-agent-clear-confirm" className="button clear is-info"
+                   onClick={(e) => {this.clearAgentName();}}>
+                  {this.msg('clear')}
+                </a>
+                &nbsp;
+                <a href="#close-agent-clear-confirm" className="button cancel is-info"
+                   onClick={(e) => {this.setState({clearAgentNameConfirm: false});}}>
+                  {this.msg('cancel')}
                 </a>
               </div>
             </div>

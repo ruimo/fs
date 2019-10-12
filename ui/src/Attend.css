@@ -64,3 +64,18 @@ td.distanceWalked {
     display: table-cell;
     vertical-align: bottom;
 }
+
+.agentNameWrapper {
+    margin-bottom: 0.5em;
+    display: inline-block;
+}
+
+.agentNameWrapper .header {
+    margin-right: 0.5em;
+    display: inline-block;
+    vertical-align: bottom;
+}
+
+.agentNameWrapper .body {
+    margin-right: 0.5em;
+}

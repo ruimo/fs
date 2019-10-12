@@ -1,6 +1,7 @@
 package helpers
 
 import java.io.{BufferedReader, StringReader}
+import java.nio.file.{Files, Path}
 import java.util.Arrays
 
 import scala.collection.{immutable => imm}
@@ -19,6 +20,7 @@ trait Tsv {
   val currentAp: Long
   val agentLevel: Int
   val distanceWalked: Int
+  val faction: String
 }
 
 object Tsv {
@@ -36,6 +38,7 @@ object Tsv {
     override val currentAp: Long = raw("Current AP").toLong
     override val agentLevel: Int = raw.get("Level").map(_.toInt).getOrElse(apToLevel(currentAp))
     override val distanceWalked: Int = raw("Distance Walked").toInt
+    override val faction: String = raw("Agent Faction")
   }
 
   def apToLevel(ap: Long): Int = {
@@ -64,4 +67,6 @@ object Tsv {
       )
     )
   }
+
+  def readFile(path: Path): Tsv = parse(new String(Files.readAllBytes(path), "utf-8"))
 }
