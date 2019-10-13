@@ -1,5 +1,8 @@
 package models
 
+import java.io.PrintWriter
+import java.nio.file.Path
+
 import javax.inject.{Inject, Singleton}
 import java.sql.Connection
 
@@ -7,8 +10,11 @@ import scala.collection.{immutable => imm}
 import java.time.{Instant, ZoneId}
 
 import anorm._
+import com.ruimo.scoins.LoanPattern
 
+import scala.annotation.tailrec
 import scala.language.postfixOps
+import scala.util.Failure
 
 case class AgentRecordId(value: Long) extends AnyVal
 
@@ -174,20 +180,7 @@ class AgentRecordRepo @Inject() (
     }
   }
 
-  def list(siteId: SiteId, page: Int = 0, pageSize: Int = 10, orderBy: OrderBy)(
-    implicit conn: Connection
-  ): PagedRecords[AgentRecordSumEntry] = {
-    import scala.language.postfixOps
-
-    val offset: Int = pageSize * page
-    
-    val baseSql = s"""
-      from agent_record r0, agent_record r1
-      where r0.site_id = {siteId} and r1.site_id = {siteId} and r0.agent_name = r1.agent_name and r0.phase = 0 and r1.phase = 1
-    """
-
-    val records: Seq[AgentRecordSumEntry] = SQL(
-      """
+  val listCols = """
       select
         r0.faction faction,
         r0.agent_name agent_name,
@@ -201,7 +194,22 @@ class AgentRecordRepo @Inject() (
         r1.distance_walked end_distance_walked,
         r1.distance_walked - r0.distance_walked distance_walked_earned,
         r1.created_at created_at
-      """ + baseSql + s"""
+  """
+
+  val listBaseSql = """
+      from agent_record r0, agent_record r1
+      where r0.site_id = {siteId} and r1.site_id = {siteId} and r0.agent_name = r1.agent_name and r0.phase = 0 and r1.phase = 1
+    """
+
+  def list(siteId: SiteId, page: Int = 0, pageSize: Int = 10, orderBy: OrderBy)(
+    implicit conn: Connection
+  ): PagedRecords[AgentRecordSumEntry] = {
+    import scala.language.postfixOps
+
+    val offset: Int = pageSize * page
+    
+    val records: Seq[AgentRecordSumEntry] = SQL(
+      listCols + listBaseSql + s"""
       order by $orderBy limit {pageSize} offset {offset}
       """
     ).on(
@@ -213,11 +221,54 @@ class AgentRecordRepo @Inject() (
     )
 
     val count = SQL(
-      "select count(r0.agent_name) " + baseSql
+      "select count(r0.agent_name) " + listBaseSql
     ).on(
       'siteId -> siteId.value
     ).as(SqlParser.scalar[Long].single)
 
     PagedRecords(page, pageSize, (count + pageSize - 1) / pageSize, orderBy, records)
+  }
+
+  def downloadTsv(siteId: SiteId, orderBy: OrderBy, path: Path)(
+    implicit conn: Connection
+  ): Unit = {
+    import scala.language.postfixOps
+    import com.ruimo.scoins.LoanPattern.autoCloseableCloser
+
+    LoanPattern.using(new PrintWriter(path.toFile)) { pr =>
+      @tailrec def go(c: Option[Cursor]): Unit = c match {
+        case Some(cursor) =>
+          cursor.row.as(listParser) match {
+            case scala.util.Success(rec) =>
+              pr.println(
+                Seq(
+                  rec.faction, rec.agentName,
+                  rec.startAgentLevel, rec.endAgentLevel, rec.earnedAgentLevel,
+                  rec.startLifetimeAp, rec.endLifetimeAp, rec.earnedLifetimeAp,
+                  rec.startDistanceWalked, rec.endDistanceWalked, rec.earnedDistanceWalked
+                ).mkString("\t")
+              )
+
+              go(cursor.next)
+            case Failure(f) => throw f
+          }
+        case None =>
+      }
+
+      pr.println(
+        Seq(
+          "Agent Faction", "Agent Name",
+          "Start Level", "End Level", "Earned Level",
+          "Start Lifetime AP", "End Lifetime AP", "Earned Lifetime AP",
+          "Start Distance Walked", "End Distance Walked", "Earned Distance Walked"
+        ).mkString("\t")
+      )
+
+      SQL(
+        listCols + listBaseSql + s"order by $orderBy"
+      ).on(
+        'siteId -> siteId.value,
+      ).withResult(go)
+    }.get
   }
 }

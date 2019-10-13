@@ -1,5 +1,7 @@
 package controllers
 
+import java.nio.file.Files
+
 import scala.util.{Failure, Success, Try}
 import java.time.{Instant, LocalDateTime, ZonedDateTime}
 import java.time.format.DateTimeFormatter
@@ -94,7 +96,6 @@ class AgentRecordController @Inject() (
   }
 
   def list(siteId: Long, page: Int, pageSize: Int, orderBySpec: String) = Action { implicit req =>
-    print("page = " + page)
     db.withConnection { implicit conn =>
       val site = siteRepo(SiteId(siteId))
 
@@ -145,6 +146,17 @@ class AgentRecordController @Inject() (
             }.toSeq
           )
         )
+      )
+    }
+  }
+
+  def download(siteId: Long, orderBySpec: String) = Action { implicit req =>
+    db.withConnection { implicit conn =>
+      val orderBy = OrderBy(orderBySpec)
+      val file = Files.createTempFile(null, null)
+      agentRecordRepo.downloadTsv(SiteId(siteId), orderBy, file)
+      Ok.sendPath(
+        file, fileName = _ => orderBy.columnName + "_" + orderBy.order + ".tsv", onClose = () => Files.delete(file)
       )
     }
   }

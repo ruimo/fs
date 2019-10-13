@@ -80,7 +80,8 @@ class AgentRecords extends Component {
           {key: 'abbrevStartWalked'},
           {key: 'abbrevEndWalked'},
           {key: 'abbrevEarnedWalked'},
-          {key: 'abbrevUpdatedTime'}
+          {key: 'abbrevUpdatedTime'},
+          {key: 'downloadWithTsv'}
         ])
       });
     } catch (e) {
@@ -275,6 +276,10 @@ class AgentRecords extends Component {
               <span className="siteName">{this.state.siteName}</span>
               <a href="#registerAgentRecord" className="button is-info" onClick={this.registerMyRecord}>
                 {this.msg('registerMyRecord')}
+              </a>
+              &nbsp;
+              <a href={"/api/downloadAgentRecords?siteId=" + this.props.match.params.siteId + "&orderBySpec=" + encodeURI(this.state.pageControl.orderByCol + " " + this.state.pageControl.orderBySort)} className="button is-info" target="_blank" rel="noreferrer noopener">
+                {this.msg('downloadWithTsv')}
               </a>
             </div>
           </div>

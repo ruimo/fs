@@ -1,5 +1,7 @@
 package models
 
+import java.io.{BufferedReader, FileReader}
+
 import anorm._
 import org.specs2.mutable._
 import helpers.InjectorSupport
@@ -8,6 +10,9 @@ import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.Application
 import play.api.db.Database
 import java.time.{Instant, ZoneId}
+
+import com.ruimo.csv.Parser
+import com.ruimo.scoins.{LoanPattern, PathUtil}
 import com.ruimo.scoins.Scoping._
 
 class AgentRecordSpec extends Specification with InjectorSupport {
@@ -224,6 +229,147 @@ class AgentRecordSpec extends Specification with InjectorSupport {
           list(0) === e0
           list(1) === e1
         }
+      }
+    }
+
+    "Can download tsv" in {
+      implicit val app: Application = GuiceApplicationBuilder().configure(inMemoryDatabase()).build()
+      inject[Database].withConnection { implicit conn =>
+        val repo = inject[AgentRecordRepo]
+        val user = inject[UserRepo].create("user", "email", 0, 0, UserRole.ADMIN)
+        val site = inject[SiteRepo].create("site0", Instant.now(), ZoneId.systemDefault(), user.id.get)
+
+        val recStart0 = repo.create(
+          site.id.get, "Enlightened", "agent00", 8, 123L, 345, AgentRecordPhase.START, "tsv00"
+        )
+        val recEnd0 = repo.create(
+          site.id.get, "Enlightened", "agent00", 9, 234L, 400, AgentRecordPhase.END, "tsv01"
+        )
+
+        val recStart1 = repo.create(
+          site.id.get, "Enlightened", "agent01", 10, 123L, 245, AgentRecordPhase.START, "tsv02"
+        )
+        val recEnd1 = repo.create(
+          site.id.get, "Enlightened", "agent01", 11, 1000L, 1400, AgentRecordPhase.END, "tsv03"
+        )
+
+        val recStart2 = repo.create(
+          site.id.get, "Enlightened", "agent02", 10, 1123L, 1245, AgentRecordPhase.START, "tsv04"
+        )
+        val recEnd2 = repo.create(
+          site.id.get, "Enlightened", "agent02", 12, 2000L, 2400, AgentRecordPhase.END, "tsv05"
+        )
+
+        import com.ruimo.scoins.LoanPattern.autoCloseableCloser
+        PathUtil.withTempFile(None, None) { path =>
+          repo.downloadTsv(site.id.get, OrderBy("agent_name asc"), path)
+          LoanPattern.using(new BufferedReader(new FileReader(path.toFile))) { br =>
+            val headers = Parser.parseOneLine(br.readLine, '\t').get
+            headers === Seq(
+              "Agent Faction", "Agent Name",
+              "Start Level", "End Level", "Earned Level",
+              "Start Lifetime AP", "End Lifetime AP", "Earned Lifetime AP",
+              "Start Distance Walked", "End Distance Walked", "Earned Distance Walked"
+            )
+
+            Parser.parseOneLine(br.readLine, '\t').get === Seq(
+              "Enlightened", "agent00",
+              "8", "9", "1",
+              "123", "234", (234 - 123).toString,
+              "345", "400", (400 - 345).toString
+            )
+
+            Parser.parseOneLine(br.readLine, '\t').get === Seq(
+              "Enlightened", "agent01",
+              "10", "11", "1",
+              "123", "1000", (1000 - 123).toString,
+              "245", "1400", (1400 - 245).toString
+            )
+
+            Parser.parseOneLine(br.readLine, '\t').get === Seq(
+              "Enlightened", "agent02",
+              "10", "12", "2",
+              "1124", "2000", (2000 - 1123).toString,
+              "1245", "2401", (2400 - 1245).toString
+            )
+
+            br.readLine === null
+          }
+        }.get
+
+        PathUtil.withTempFile(None, None) { path =>
+          repo.downloadTsv(site.id.get, OrderBy("lifetime_ap_earned desc"), path)
+          LoanPattern.using(new BufferedReader(new FileReader(path.toFile))) { br =>
+            val headers = Parser.parseOneLine(br.readLine, '\t').get
+            headers === Seq(
+              "Agent Faction", "Agent Name",
+              "Start Level", "End Level", "Earned Level",
+              "Start Lifetime AP", "End Lifetime AP", "Earned Lifetime AP",
+              "Start Distance Walked", "End Distance Walked", "Earned Distance Walked"
+            )
+
+            Parser.parseOneLine(br.readLine, '\t').get === Seq(
+              "Enlightened", "agent01",
+              "10", "11", "1",
+              "123", "1000", (1000 - 123).toString, // 877
+              "245", "1400", (1400 - 245).toString // 1155
+            )
+
+            Parser.parseOneLine(br.readLine, '\t').get === Seq(
+              "Enlightened", "agent02",
+              "10", "12", "2",
+              "1124", "2000", (2000 - 1124).toString, // 876
+              "1245", "2401", (2401 - 1245).toString // 1156
+            )
+
+            Parser.parseOneLine(br.readLine, '\t').get === Seq(
+              "Enlightened", "agent00",
+              "8", "9", "1",
+              "123", "234", (234 - 123).toString, // 111
+              "345", "400", (400 - 345).toString // 55
+            )
+
+            br.readLine === null
+          }
+        }.get
+
+        PathUtil.withTempFile(None, None) { path =>
+          repo.downloadTsv(site.id.get, OrderBy("distance_walked_earned asc"), path)
+          LoanPattern.using(new BufferedReader(new FileReader(path.toFile))) { br =>
+            val headers = Parser.parseOneLine(br.readLine, '\t').get
+            headers === Seq(
+              "Agent Faction", "Agent Name",
+              "Start Level", "End Level", "Earned Level",
+              "Start Lifetime AP", "End Lifetime AP", "Earned Lifetime AP",
+              "Start Distance Walked", "End Distance Walked", "Earned Distance Walked"
+            )
+
+            Parser.parseOneLine(br.readLine, '\t').get === Seq(
+              "Enlightened", "agent00",
+              "8", "9", "1",
+              "123", "234", (234 - 123).toString, // 111
+              "345", "400", (400 - 345).toString // 55
+            )
+
+            Parser.parseOneLine(br.readLine, '\t').get === Seq(
+              "Enlightened", "agent01",
+              "10", "11", "1",
+              "123", "1000", (1000 - 123).toString, // 877
+              "245", "1400", (1400 - 245).toString // 1155
+            )
+
+            Parser.parseOneLine(br.readLine, '\t').get === Seq(
+              "Enlightened", "agent02",
+              "10", "12", "2",
+              "1124", "2000", (2000 - 1124).toString, // 876
+              "1245", "2401", (2401 - 1245).toString // 1156
+            )
+
+            br.readLine === null
+          }
+        }.get
+
+        1 === 1
       }
     }
   }

@@ -29,6 +29,7 @@ GET     /attend                     controllers.AttendController.index(siteId: L
 POST    /registerRecord             controllers.AgentRecordController.createAgentRecord
 GET     /registeredRecords          controllers.AgentRecordController.registeredRecords(siteId: Long, agentName: String)
 GET     /agentRecords               controllers.AgentRecordController.list(siteId: Long, page: Int ?= 0, pageSize: Int ?= 10, orderBySpec ?= "lifetime_ap_earned desc")
+GET     /api/downloadAgentRecords   controllers.AgentRecordController.download(siteId: Long, orderBySpec: String)
 
 # An example route (Prefix all API routes with apiPrefix defined in application.conf)
 GET     /version                    controllers.HomeController.version

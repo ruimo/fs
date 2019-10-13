@@ -63,3 +63,4 @@ registerCompleted = Registration completed
 clear = Clear
 clearAgentNameGuide = Do you want to clear agent name?
 clearAgentNameGuide2 = If you want to register another agent's record, proceed.
+downloadWithTsv = Download

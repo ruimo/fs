@@ -96,3 +96,4 @@ registerCompleted = 登録完了。お疲れ様でした!
 clear = クリア
 clearAgentNameGuide = エージェント名をクリアしてよろしいですか？
 clearAgentNameGuide2 = 別のエージェントのレコードを登録する場合はエージェント名をクリアしてください
+downloadWithTsv = ダウンロード
