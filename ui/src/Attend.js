@@ -23,7 +23,8 @@ class Attend extends Component {
       recordAlreadyExists: '',
       guide: '',
       showHelp: false,
-      clearAgentNameConfirm: false
+      clearAgentNameConfirm: false,
+      termOfUseConfirmed: false
     };
   }
   
@@ -83,8 +84,10 @@ class Attend extends Component {
           { key: 'showScore'},
           { key: 'abbrevFaction'},
           { key: 'clear'},
+          { key: 'confirm'},
           { key: 'clearAgentNameGuide'},
-          { key: 'clearAgentNameGuide2'}
+          { key: 'clearAgentNameGuide2'},
+          { key: 'termOfUse'}
         ])
       });
     } catch (e) {
@@ -93,6 +96,10 @@ class Attend extends Component {
         globalError: this.msg('error.unknown')
       });
     }
+
+    this.setState({
+      termOfUseConfirmed: Cookies.get('termOfUseConfirmed', {path: '/attend'}) !== undefined
+    });
 
     const agentName = Cookies.get('agentName', {path: '/attend'});
     this.setState({
@@ -319,6 +326,13 @@ class Attend extends Component {
     else return this.state.records.START !== undefined || this.state.records.END !== undefined;
   }
 
+  termOfUseConfirmed = () => {
+    this.setState({
+      termOfUseConfirmed: true
+    });
+    Cookies.set('termOfUseConfirmed', "true", {expires: 7, path: '/attend'})
+  }
+
   render() {
     const message = this.state.message === '' ? "" :
           <article className="message is-info">
@@ -427,9 +441,9 @@ class Attend extends Component {
               <div id="agentRecordWrapper" className="wrapper">
                 <label className="label" htmlFor="tsv">
                   <span>{this.msg('agentRecord')}</span>
-                  <a href="#help" className="button is-info" onClick={(e) => this.showHelp()}>
+                  <button onClick={() => window.open("https://ruimo.github.io/fs-help/#/howto")} className="button is-info">
                     <i className="far fa-question-circle"></i>
-                  </a>
+                  </button>
                 </label>
                 <textarea id="tsv" rows="10" placeholder={this.msg('pasteAgentRecord')}
                           value={this.state.tsv} onChange={(e) => this.setState({tsv: e.target.value})}/>
@@ -533,6 +547,24 @@ class Attend extends Component {
                 <a href="#close-agent-clear-confirm" className="button cancel is-info"
                    onClick={(e) => {this.setState({clearAgentNameConfirm: false});}}>
                   {this.msg('cancel')}
+                </a>
+              </div>
+            </div>
+          </div>
+          <button className="modal-close is-large" aria-label="close" onClick={(e) => {this.setState({showHelp: false});}}></button>
+        </div>
+
+        <div className={cx("modal termOfUseConfirm", {'is-active': this.state.termOfUseConfirmed === false})}>
+          <div className="modal-background"></div>
+          <div className="modal-content">
+            <div className='dialogButtons'>
+              <div>
+                {this.msg('termOfUse')}
+              </div>
+              <div>
+                <a href="#confirm-term-of-use" className="button confirm is-info"
+                   onClick={this.termOfUseConfirmed}>
+                  {this.msg('confirm')}
                 </a>
               </div>
             </div>

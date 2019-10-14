@@ -97,3 +97,6 @@ clear = クリア
 clearAgentNameGuide = エージェント名をクリアしてよろしいですか？
 clearAgentNameGuide2 = 別のエージェントのレコードを登録する場合はエージェント名をクリアしてください
 downloadWithTsv = ダウンロード
+close = 閉じる
+confirm = 確認
+termOfUse = イベントを管理する目的でIngress First Saturday主催者とこのフォーム情報を共有することに同意します。また、Ingress First Saturdayの主催者はNiaticの公式な代表者でないことを理解しています。

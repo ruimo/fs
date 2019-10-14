@@ -76,3 +76,12 @@ td.distanceWalked {
 .agentNameWrapper .body {
     margin-right: 0.5em;
 }
+
+.button.confirm {
+    margin-top: 0.5em;
+}
+
+.termOfUseConfirm .dialogButtons {
+    margin-left: 1em;
+    margin-right: 1em;
+}

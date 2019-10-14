@@ -64,3 +64,6 @@ clear = Clear
 clearAgentNameGuide = Do you want to clear agent name?
 clearAgentNameGuide2 = If you want to register another agent's record, proceed.
 downloadWithTsv = Download
+close = Close
+confirm = Confirm
+termOfUse = I agree to share this form information with the Ingress First Saturday organizers for the purpose of solely managing events. I understand that the organizers of Ingress First Saturday are not directly related to Niatic.
