@@ -11,7 +11,7 @@ import org.specs2.mutable.Specification
 import play.api.test.WithServer
 import play.api.test.Helpers._
 import com.codeborne.selenide.Selenide._
-import com.codeborne.selenide.{Browsers, Condition, Configuration, WebDriverRunner}
+import com.codeborne.selenide.{Browsers, CollectionCondition, Condition, Configuration, Selenide, WebDriverRunner}
 import helpers.{Helper, InjectorSupport, TimeZoneInfo, Tsv}
 import models.{UserRepo, UserRole}
 import org.fluentlenium.core.conditions.Conditions
@@ -19,9 +19,8 @@ import play.api.db.Database
 import java.time.Instant
 import java.time.ZoneId
 
-import com.codeborne.selenide.CollectionCondition
 import controllers.AttendController
-import org.openqa.selenium.{By, Keys, WebElement}
+import org.openqa.selenium.{By, Cookie, Keys, WebElement}
 import play.api.db.Database
 import play.api.i18n.Lang
 
@@ -58,7 +57,11 @@ class ShowResultWithOneAttendeeSpec extends Specification with InjectorSupport w
         $(".siteName").text === "site"
         $(".emptyMessage").text === msg("recordEmpty")
 
+        WebDriverRunner.getWebDriver.manage().deleteAllCookies()
         open("/attend/" + site.id.get.value)
+        $(".termOfUseConfirm").should(Condition.visible)
+        $(".termOfUseConfirm .confirm.button").click()
+
         $(".dateTime").shouldHave(Condition.text(dateTime))
         $(".timezone").text === TimeZoneInfo.tableByZoneId(zoneId).view
         $(".notification").text === msg("registerBeforeRecordGuide")

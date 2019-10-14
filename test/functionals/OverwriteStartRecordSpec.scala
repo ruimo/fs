@@ -54,7 +54,11 @@ class OverwriteStartRecordSpec extends Specification with InjectorSupport with U
         val attendCtr = inject[AttendController]
         val dateTime = attendCtr.formatter.withZone(zoneId).format(heldOnUtc)
 
+        WebDriverRunner.getWebDriver.manage().deleteAllCookies()
         open("/attend/" + site.id.get.value)
+        $(".termOfUseConfirm").should(Condition.visible)
+        $(".termOfUseConfirm .confirm.button").click()
+
         $(".dateTime").text === dateTime
         $(".timezone").text === TimeZoneInfo.tableByZoneId(zoneId).view
         $(".notification").text === msg("registerBeforeRecordGuide")
