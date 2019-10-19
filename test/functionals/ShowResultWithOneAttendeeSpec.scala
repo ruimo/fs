@@ -57,7 +57,6 @@ class ShowResultWithOneAttendeeSpec extends Specification with InjectorSupport w
         $(".siteName").text === "site"
         $(".emptyMessage").text === msg("recordEmpty")
 
-        WebDriverRunner.getWebDriver.manage().deleteAllCookies()
         open("/attend/" + site.id.get.value)
         $(".termOfUseConfirm").should(Condition.visible)
         $(".termOfUseConfirm .confirm.button").click()

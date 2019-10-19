@@ -4,13 +4,13 @@ import './Common.css';
 import './Attend.css';
 import MessagesLoader from "./MessagesLoader";
 import cx from 'classnames';
-import Cookies from 'js-cookie/src/js.cookie.js';
 import QRCode from "qrcode.react"
 import helpImage from'./images/help.png';
 
 class Attend extends Component {
   constructor(props) {
     super(props);
+
     this.state = {
       message: '',
       globalError: '',
@@ -28,6 +28,8 @@ class Attend extends Component {
     };
   }
   
+  nullOrUndef = (o) => o === undefined || o === null
+
   msg = (key) => {
     return this.state.messages(key);
   }
@@ -98,14 +100,14 @@ class Attend extends Component {
     }
 
     this.setState({
-      termOfUseConfirmed: Cookies.get('termOfUseConfirmed', {path: '/attend'}) !== undefined
+      termOfUseConfirmed: !this.nullOrUndef(localStorage.getItem('termOfUseConfirmed'))
     });
 
-    const agentName = Cookies.get('agentName', {path: '/attend'});
+    const agentName = localStorage.getItem('agentName');
     this.setState({
       agentName
     });
-    if (agentName !== undefined) {
+    if (!this.nullOrUndef(agentName)) {
       this.retrieveAgentRecord(agentName);
     }
 
@@ -158,9 +160,8 @@ class Attend extends Component {
 
     if (resp.status === 200) {
       const json = await resp.json();
-      console.log("json: " + JSON.stringify(json));
       const agentName = json[phase].agentName;
-      Cookies.set("agentName", agentName, {expires: 7, path: '/attend'});
+      localStorage.setItem("agentName", agentName);
 
       this.setState({
         records: json,
@@ -217,7 +218,7 @@ class Attend extends Component {
 
     if (resp.status === 200) {
       const json = await resp.json();
-      Cookies.set("agentName", json[phase].agentName, {expires: 7, path: '/attend'});
+      localStorage.setItem("agentName", json[phase].agentName);
 
       this.setState({
         recordAlreadyExists: '',
@@ -257,7 +258,7 @@ class Attend extends Component {
   }
 
   shouldStartRecordButtonShown = () => {
-    if (this.state.agentName === undefined) {
+    if (this.nullOrUndef(this.state.agentName)) {
       return true;
     } else {
       if (this.state.records.START === undefined) {
@@ -269,7 +270,7 @@ class Attend extends Component {
   }
 
   shouldEndRecordButtonShown = () => {
-    if (this.state.agentName === undefined) {
+    if (this.nullOrUndef(this.state.agentName)) {
       return false;
     } else {
       if (this.state.records.START === undefined) {
@@ -283,7 +284,7 @@ class Attend extends Component {
   }
 
   notification = () => {
-    if (this.state.agentName === undefined) {
+    if (this.nullOrUndef(this.state.agentName)) {
       return (
         <div className="notification is-dark">
         {this.msg('registerBeforeRecordGuide')}
@@ -313,7 +314,7 @@ class Attend extends Component {
   }
 
   clearAgentName = () => {
-    Cookies.remove("agentName", {path: '/attend'});
+    localStorage.removeItem("agentName");
 
     this.setState({
       agentName: undefined,
@@ -322,7 +323,7 @@ class Attend extends Component {
   }
 
   shouldShowAgentRecord = () => {
-    if (this.state.agentName === undefined) return false;
+    if (this.nullOrUndef(this.state.agentName)) return false;
     else return this.state.records.START !== undefined || this.state.records.END !== undefined;
   }
 
@@ -330,7 +331,7 @@ class Attend extends Component {
     this.setState({
       termOfUseConfirmed: true
     });
-    Cookies.set('termOfUseConfirmed', "true", {expires: 7, path: '/attend'})
+    localStorage.setItem('termOfUseConfirmed', "true");
   }
 
   render() {
@@ -427,11 +428,11 @@ class Attend extends Component {
             <div className="wrapper">
               <div className="agentNameWrapper">
                 <span className="header">{this.msg('agentName')}</span>
-                <span className={cx("body tag is-info is-large", {'is-hidden': this.state.agentName === undefined})}>
+                <span className={cx("body tag is-info is-large", {'is-hidden': this.nullOrUndef(this.state.agentName)})}>
                   {this.state.agentName}
                 </span>
                 <a href="#clearAgentName"
-                   className={cx("clear button is-danger", {'is-hidden': this.state.agentName === undefined})}
+                   className={cx("clear button is-danger", {'is-hidden': this.nullOrUndef(this.state.agentName)})}
                    onClick={() => this.setState({clearAgentNameConfirm: true})}>
                   {this.msg('clear')}
                 </a>

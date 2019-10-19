@@ -12,7 +12,6 @@ GET     /startLogin                 controllers.UserController.startLogin()
 POST    /login                      controllers.UserController.login()
 POST    /logoff                     controllers.UserController.logoff()
 
-#GET     /changePassword             controllers.UserController.changePasswordStart()
 POST    /changePassword             controllers.UserController.changePassword()
 
 GET     /admin                      controllers.AdminController.top
@@ -24,6 +23,7 @@ POST    /updateSite                 controllers.SiteController.updateSite(siteId
 GET     /listSiteToUpdate           controllers.SiteController.listSiteToUpdate(page: Int ?= 0, pageSize: Int ?= 10, orderBySpec ?= "site.created_at desc")
 GET     /listSite                   controllers.SiteController.listSite(page: Int ?= 0, pageSize: Int ?= 10, orderBySpec ?= "site.created_at desc")
 POST    /deleteSite                 controllers.SiteController.deleteSite(siteId: Long)
+POST    /api/deleteRecords          controllers.AgentRecordController.deleteRecords(siteId: Long)
 
 GET     /attend                     controllers.AttendController.index(siteId: Long)
 POST    /registerRecord             controllers.AgentRecordController.createAgentRecord

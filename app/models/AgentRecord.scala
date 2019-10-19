@@ -271,4 +271,10 @@ class AgentRecordRepo @Inject() (
       ).withResult(go)
     }.get
   }
+
+  def deleteRecords(siteId: SiteId)(implicit conn: Connection): Long = SQL(
+    "delete from agent_record where site_id = {siteId}"
+  ).on(
+    'siteId -> siteId.value
+  ).executeUpdate()
 }

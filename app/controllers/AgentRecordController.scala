@@ -26,6 +26,7 @@ class AgentRecordController @Inject() (
   cc: ControllerComponents,
   agentRecordRepo: AgentRecordRepo,
   siteRepo: SiteRepo,
+  authenticated: NeedLogin.Authenticated,
   implicit val ec: ExecutionContext
 ) extends AbstractController(cc) with I18nSupport {
   val logger = Logger(getClass)
@@ -158,6 +159,23 @@ class AgentRecordController @Inject() (
       Ok.sendPath(
         file, fileName = _ => orderBy.columnName + "_" + orderBy.order + ".tsv", onClose = () => Files.delete(file)
       )
+    }
+  }
+
+  def deleteRecords(sid: Long) = authenticated(parsers.anyContent) { implicit req =>
+    val userId: Option[UserId] = req.login.user.id
+    val siteId = SiteId(sid)
+    db.withConnection { implicit conn =>
+      siteRepo.get(siteId) match {
+        case None => Ok("")
+        case Some(site) =>
+          if (site.owner == userId.get || req.login.isSuper) {
+            agentRecordRepo.deleteRecords(siteId)
+            Ok("")
+          } else {
+            Forbidden("")
+          }
+      }
     }
   }
 }

@@ -13,7 +13,6 @@ import SiteList from "./SiteList";
 import LogoffButton from "./LogoffButton";
 import AgentRecords from "./AgentRecords";
 import "@fortawesome/fontawesome-free/js/all.min.js"
-
 import './App.sass';
 
 class App extends Component {
@@ -157,7 +156,7 @@ class App extends Component {
           </nav>
           <main className="columns">
             <div className="column">
-              <Route exact path="/" render={() => <SiteList/>}/>
+              <Route exact path="/" render={() => <SiteList canDeleteSite={false}/>}/>
               <Route path="/admin" exact render={() => <Admin/>}/>
               <Route path="/site" exact render={() => <Site/>}/>
               <Route path="/login/:nextUrl" render={() => <Login onLoginSuccess={this.onLoginSuccess}/>}/>

@@ -25,8 +25,8 @@ class SiteController @Inject() (
   parsers: PlayBodyParsers,
   cc: ControllerComponents,
   siteRepo: SiteRepo,
-  implicit val ec: ExecutionContext,
-  authenticated: NeedLogin.Authenticated
+  authenticated: NeedLogin.Authenticated,
+  implicit val ec: ExecutionContext
 ) extends AbstractController(cc) with I18nSupport {
   val logger = Logger(getClass)
   val createSiteForm = Form(
