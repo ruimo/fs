@@ -178,4 +178,21 @@ class AgentRecordController @Inject() (
       }
     }
   }
+
+  def deleteAgentRecord(sid: Long, agentName: String) = authenticated(parsers.anyContent) { implicit req =>
+    val userId: Option[UserId] = req.login.user.id
+    val siteId = SiteId(sid)
+    db.withConnection { implicit conn =>
+      siteRepo.get(siteId) match {
+        case None => Ok("")
+        case Some(site) =>
+          if (site.owner == userId.get || req.login.isSuper) {
+            agentRecordRepo.deleteRecordsByAgentName(agentName)
+            Ok("")
+          } else {
+            Forbidden("")
+          }
+      }
+    }
+  }
 }

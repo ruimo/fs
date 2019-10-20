@@ -25,7 +25,7 @@ class LogoffButton extends Component {
   logoff = async() => {
     try {
       const resp = await fetch(
-        "/logoff", {
+        "/api/logoff", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

@@ -43,7 +43,7 @@ class Site extends Component {
 
   componentDidMount = async() => {
     try {
-      const resp = await fetch("/timeZoneInfo");
+      const resp = await fetch("/api/timeZoneInfo");
 
       if (resp.status === 200) {
         const json = await resp.json();
@@ -96,14 +96,14 @@ class Site extends Component {
   }
 
   onCreateSite = () => {
-    this.createOrUpdateSite("/createSite");
+    this.createOrUpdateSite("/api/createSite");
     this.setState({
       selectedSite: undefined
     });
   }
 
   onUpdateSite = () => {
-    this.createOrUpdateSite("/updateSite?siteId=" + this.state.selectedSite.siteId);
+    this.createOrUpdateSite("/api/updateSite?siteId=" + this.state.selectedSite.siteId);
   }
 
   onSiteDeleted = (siteId) => {

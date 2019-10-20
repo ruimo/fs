@@ -140,7 +140,7 @@ class SiteController @Inject() (
           "pageSize" -> list.pageSize,
           "table" -> list.records.map { case (site, user) =>
               Json.obj(
-                "siteId" -> site.id.get.value,
+                "siteId" -> site.id.get.value.toString,
                 "siteName" -> site.siteName,
                 "dateTime" -> formatter.format(ZonedDateTime.ofInstant(site.heldOnUtc, site.heldOnZoneId)),
                 "timeZone" -> (site.heldOnZoneId + "(" + site.heldOnZoneId.getRules.getOffset(Instant.EPOCH) + ")"),
@@ -164,6 +164,23 @@ class SiteController @Inject() (
           } else {
             Forbidden("")
           }
+      }
+    }
+  }
+
+  def siteInfo(siteId: Long) = Action { implicit req =>
+    db.withConnection { implicit conn =>
+      siteRepo.get(SiteId(siteId)) match {
+        case None => NotFound("")
+        case Some(site) => Ok(
+          Json.obj(
+            "siteId" -> site.id.get.value.toString,
+            "siteName" -> site.siteName,
+            "dateTime" -> formatter.format(ZonedDateTime.ofInstant(site.heldOnUtc, site.heldOnZoneId)),
+            "timeZone" -> (site.heldOnZoneId + "(" + site.heldOnZoneId.getRules.getOffset(Instant.EPOCH) + ")"),
+            "ownerUserId" -> site.owner.value.toString
+          )
+        )
       }
     }
   }

@@ -32,7 +32,7 @@ class App extends Component {
 
   componentDidMount = async() => {
     try {
-      const resp = await fetch("/version");
+      const resp = await fetch("/api/version");
       if (resp.status === 200) {
         const json = await resp.json();
         console.log("version: " + JSON.stringify(json));
@@ -47,12 +47,16 @@ class App extends Component {
     }
 
     try {
-      const resp = await fetch("/loginInfo");
+      const resp = await fetch("/api/loginInfo");
       if (resp.status === 200) {
-        const json = await resp.json();
-        console.log("loginInfo: " + JSON.stringify(json));
+        const user = await resp.json();
+        console.log("loginInfo: " + JSON.stringify(user));
         this.setState({
-          loginUser: json.user === undefined ? undefined : json.user.name
+          loginUser: user
+        });
+      } else if (resp.status === 404) {
+        this.setState({
+          loginUser: undefined
         });
       } else {
         console.log("error: " + resp.status);
@@ -73,29 +77,6 @@ class App extends Component {
     }
   }
   
-  logoff = async() => {
-    try {
-      const resp = await fetch(
-        "/logoff", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Csrf-Token": "nocheck"
-          },
-        }
-      );
-      if (resp.status === 200) {
-        this.setState({
-          loginUser: undefined
-        });
-      } else {
-        console.log("error: " + resp.status);
-      }
-    } catch (e) {
-      console.log("Error: " + JSON.stringify(e));
-    }
-  }
-
   adminMenu = () => {
     this.props.history.push("/admin");
   }
@@ -106,10 +87,9 @@ class App extends Component {
     }));
   }
 
-  onLoginSuccess = (userName) => {
-    console.log("App.onLoginSuccess: " + userName );
+  onLoginSuccess = (user) => {
     this.setState({
-      loginUser: userName
+      loginUser: user
     });
   }
 
@@ -161,7 +141,7 @@ class App extends Component {
               <Route path="/site" exact render={() => <Site/>}/>
               <Route path="/login/:nextUrl" render={() => <Login onLoginSuccess={this.onLoginSuccess}/>}/>
               <Route path="/attend/:siteId" render={() => <Attend/>}/>
-              <Route path="/agentRecords/:siteId" render={() => <AgentRecords/>}/>
+              <Route path="/agentRecords/:siteId" render={() => <AgentRecords loginUser={this.state.loginUser}/>}/>
             </div>
           </main>
           <div className="footer">

@@ -1,9 +1,9 @@
 class SiteRepo {
   static listToUpdate = (page, pageSize, orderBy, onSuccess, onLoginRequired, onUnknownError) =>
-    SiteRepo.listSite("listSiteToUpdate", page, pageSize, orderBy, onSuccess, onLoginRequired, onUnknownError)
+    SiteRepo.listSite("/api/listSiteToUpdate", page, pageSize, orderBy, onSuccess, onLoginRequired, onUnknownError)
 
   static list = (page, pageSize, orderBy, onSuccess, onLoginRequired, onUnknownError) =>
-    SiteRepo.listSite("listSite", page, pageSize, orderBy, onSuccess, onLoginRequired, onUnknownError)
+    SiteRepo.listSite("/api/listSite", page, pageSize, orderBy, onSuccess, onLoginRequired, onUnknownError)
 
   static listSite = async(urlBase, page, pageSize, orderBy, onSuccess, onLoginRequired, onUnknownError) => {
     try {

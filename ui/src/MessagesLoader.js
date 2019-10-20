@@ -12,7 +12,7 @@ class MessagesLoader {
 
     try {
       const resp = await fetch(
-        "/messages", {
+        "/api/messages", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

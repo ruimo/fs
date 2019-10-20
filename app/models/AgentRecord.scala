@@ -201,7 +201,9 @@ class AgentRecordRepo @Inject() (
       where r0.site_id = {siteId} and r1.site_id = {siteId} and r0.agent_name = r1.agent_name and r0.phase = 0 and r1.phase = 1
     """
 
-  def list(siteId: SiteId, page: Int = 0, pageSize: Int = 10, orderBy: OrderBy)(
+  def list(
+    siteId: SiteId, page: Int = 0, pageSize: Int = 10, orderBy: OrderBy = OrderBy("lifetime_ap_earned desc")
+  )(
     implicit conn: Connection
   ): PagedRecords[AgentRecordSumEntry] = {
     import scala.language.postfixOps
@@ -276,5 +278,11 @@ class AgentRecordRepo @Inject() (
     "delete from agent_record where site_id = {siteId}"
   ).on(
     'siteId -> siteId.value
+  ).executeUpdate()
+
+  def deleteRecordsByAgentName(agentName: String)(implicit conn: Connection): Long = SQL(
+    "delete from agent_record where agent_name = {agentName}"
+  ).on(
+    'agentName -> agentName
   ).executeUpdate()
 }

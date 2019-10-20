@@ -21,7 +21,8 @@ class AgentRecords extends Component {
         pageCount: 0,
         nextPageExists: false,
         prevPageExists: false
-      }
+      },
+      deleteErrorMessage: ''
     };
   }
 
@@ -29,9 +30,9 @@ class AgentRecords extends Component {
     return this.state.messages(key);
   }
 
-  renderAgentRecords = async(page, orderBy) => {
+  retrieveRecords = async(page, orderBy) => {
     try {
-      const url = "/agentRecords?siteId=" + this.props.match.params.siteId + "&page=" + page + "&orderBySpec=" + encodeURI(orderBy);
+      const url = "/api/agentRecords?siteId=" + this.props.match.params.siteId + "&page=" + page + "&orderBySpec=" + encodeURI(orderBy);
       const resp = await fetch(url);
 
       if (resp.status === 200) {
@@ -61,6 +62,37 @@ class AgentRecords extends Component {
     }
   }
 
+  renderAgentRecords = async(page, orderBy) => {
+    const siteId = this.props.match.params.siteId;
+
+    try {
+      const resp = await fetch("/api/siteInfo?siteId=" + siteId)
+
+      if (resp.status === 200) {
+        const json = await resp.json();
+        this.setState({
+          siteInfo: json
+        });
+      } else if (resp.status === 404) {
+        this.setState({
+          siteInfo: undefined
+        });
+      } else {
+        console.log("error: " + resp.status);
+        this.setState({
+          globalError: this.msg('error.unknown')
+        });
+      }
+    } catch (e) {
+      console.log("Error: " + JSON.stringify(e));
+      this.setState({
+        globalError: this.msg('error.unknown')
+      });
+    }
+
+    this.retrieveRecords(page, orderBy);
+  }
+
   componentDidMount = async() => {
     try {
       this.setState({
@@ -81,7 +113,13 @@ class AgentRecords extends Component {
           {key: 'abbrevEndWalked'},
           {key: 'abbrevEarnedWalked'},
           {key: 'abbrevUpdatedTime'},
-          {key: 'downloadWithTsv'}
+          {key: 'downloadWithTsv'},
+          {key: 'all'},
+          {key: 'cancel'},
+          {key: 'clearAllAgentRecords'},
+          {key: 'clearAgentRecord'},
+          {key: 'clearAllAgentRecordsConfirm'},
+          {key: 'clearAgentRecordConfirm'}
         ])
       });
     } catch (e) {
@@ -153,11 +191,122 @@ class AgentRecords extends Component {
     }
   }
 
+  clearAllAgentRecords = async(siteId) => {
+    try {
+      const resp = await fetch(
+        "/api/deleteRecords?siteId=" + siteId, {
+          method: "POST",
+          headers: {
+            "Csrf-Token": "nocheck"
+          },
+          body: ''
+        }
+      );
+
+      if (resp.status === 200) {
+        this.setState({
+          clearAllAgentRecordsConfirm: false,
+          records: [],
+          globalError: '',
+          deleteErrorMessage: ''
+        });
+      } else if (resp.status === 403) {
+        this.setState({
+          deleteErrorMessage: this.msg('unknownError')
+        });
+      }
+    } catch (e) {
+      console.log("error: " + JSON.stringify(e));
+    }
+  }
+
+  cancelClearAllAgentRecords = (e) => {
+    this.setState({
+      clearAllAgentRecordsConfirm: false
+    });
+  }
+
+  showDeleteAllAgentRecordsDialog = () => {
+    this.setState({
+      clearAllAgentRecordsConfirm: true
+    });
+  }
+
+  showDeleteAgentRecordDialog = (agentName) => {
+    this.setState({
+      clearAgentRecordAgentName: agentName
+    });
+  }
+
+  cancelClearAgentRecord = (e) => {
+    this.setState({
+      clearAgentRecordAgentName: undefined
+    });
+  }
+
+  clearAgentRecord = async(siteId, agentName) => {
+    try {
+      const resp = await fetch(
+        "/api/deleteAgentRecord?siteId=" + siteId + "&agentName=" + encodeURI(agentName), {
+          method: "POST",
+          headers: {
+            "Csrf-Token": "nocheck"
+          },
+          body: ''
+        }
+      );
+
+      if (resp.status === 200) {
+        this.setState({
+          clearAgentRecordAgentName: undefined,
+          globalError: '',
+          deleteErrorMessage: ''
+        });
+        this.retrieveRecords(
+          this.state.pageControl.currentPage,
+          this.state.pageControl.orderByCol + " " + this.state.pageControl.orderBySort
+        );
+      } else if (resp.status === 403) {
+        this.setState({
+          deleteErrorMessage: this.msg('unknownError')
+        });
+      }
+    } catch (e) {
+      console.log("error: " + JSON.stringify(e));
+    }
+  }
+
   render() {
+    const canClearAgentRecord = 
+          this.props.loginUser !== undefined &&
+          this.state.siteInfo !== undefined &&
+          this.state.siteInfo.ownerUserId === this.props.loginUser.id;
+
     const globalError = this.state.globalError === '' ? "" :
           <article className="message is-danger">
             <div className="message-body">{this.state.globalError}</div>
           </article>;
+
+    const removeRecordHeader = 
+          <th className="removeAllAgentRecords">
+          { canClearAgentRecord ?
+            <button className="is-danger button" title={this.msg("all")}
+                    onClick={ev => this.showDeleteAllAgentRecordsDialog()}>
+              {this.msg("all")}&nbsp;<i className="far fa-trash-alt"></i>
+            </button>: <span className="placeHolder">&nbsp;</span>}
+          </th>;
+
+    const removeRecordRow = (row) => {
+      return (
+        <td className="removeRecord">
+          { canClearAgentRecord ?
+            <button className="is-danger button" title="removeAgentRecord"
+                    onClick={ev => this.showDeleteAgentRecordDialog(row.agentName)}>
+              <i className="far fa-trash-alt"></i>
+            </button>: <span className="placeHolder">&nbsp;</span>}
+        </td>
+      );
+    };
 
     const table = this.state.records.length === 0 ?
           <span className="emptyMessage">{this.msg('recordEmpty')}</span>
@@ -187,6 +336,7 @@ class AgentRecords extends Component {
                   {this.renderOrderByNum('distance_walked_earned')}{this.msg('abbrevEarnedWalked')}
                 </th>
                 <th className="updatedTime">{this.msg('abbrevUpdatedTime')}</th>
+                {removeRecordHeader}
               </tr>
             </thead>
             
@@ -207,6 +357,7 @@ class AgentRecords extends Component {
                     <td className="endWalked">{Number(e.endWalked).toLocaleString()}</td>
                     <td className="earnedWalked">{Number(e.earnedWalked).toLocaleString()}</td>
                     <td className="updatedTime">{e.createdAt}</td>
+                    {removeRecordRow(e)}
                   </tr>
                 )
               }
@@ -293,6 +444,57 @@ class AgentRecords extends Component {
             </div>
           </div>
         </nav>
+
+        { /* modals */ }
+        <div className={cx("modal clearAllAgentRecordsConfirm", {'is-active': this.state.clearAllAgentRecordsConfirm === true})}>
+          <div className="modal-background"></div>
+          <div className="modal-content">
+            <div className='dialogSiteName'>
+              { this.state.siteName !== undefined ? this.state.siteName : "" }
+            </div>
+            <div>
+              { this.msg('clearAgentRecordConfirm') }
+            </div>
+            <div className='dialogButtons'>
+              <button className="button is-danger clearAgentRecords"
+                 onClick={(e) => {this.clearAllAgentRecords(this.props.match.params.siteId);}}>
+                {this.msg('clearAllAgentRecords')}
+              </button>&nbsp;
+              <button className="button cancel" onClick={(e) => {this.cancelClearAllAgentRecords(e);}}>
+                {this.msg('cancel')}
+              </button>
+            </div>
+            <div className={cx("notification is-danger errorMessage", {'is-active': this.state.deleteErrorMessage !== ''})}>
+              {this.state.deleteErrorMessage}
+            </div>
+          </div>
+          <button className="modal-close is-large" aria-label="close" onClick={(e) => {this.cancelClearAllAgentRecords(e);}}></button>
+        </div>
+
+        <div className={cx("modal clearAgentRecordConfirm", {'is-active': this.state.clearAgentRecordAgentName !== undefined})}>
+          <div className="modal-background"></div>
+          <div className="modal-content">
+            <div className='dialogAgentName'>
+              { this.state.clearAgentRecordAgentName }
+            </div>
+            <div>
+              { this.msg('clearAgentRecordConfirm') }
+            </div>
+            <div className='dialogButtons'>
+              <button className="button is-danger clearAgentRecord"
+                      onClick={(e) => {this.clearAgentRecord(this.props.match.params.siteId, this.state.clearAgentRecordAgentName);}}>
+                {this.msg('clearAgentRecord')}
+              </button>&nbsp;
+              <button className="button cancel" onClick={(e) => {this.cancelClearAgentRecord(e);}}>
+                {this.msg('cancel')}
+              </button>
+            </div>
+            <div className={cx("notification is-danger errorMessage", {'is-active': this.state.deleteErrorMessage !== ''})}>
+              {this.state.deleteErrorMessage}
+            </div>
+          </div>
+          <button className="modal-close is-large" aria-label="close" onClick={(e) => {this.cancelClearAgentRecord(e);}}></button>
+        </div>
       </div>
     );
   }

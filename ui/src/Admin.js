@@ -20,7 +20,7 @@ class Admin extends Component {
   async componentDidMount() {
     this._isMounted = true;
     try {
-      const resp = await fetch("/admin");
+      const resp = await fetch("/api/admin");
       if (resp.status === 401) {
         console.log("Login needed");
         this.props.history.push("/login/admin")

@@ -15,7 +15,7 @@ class Login extends Component {
 
   componentDidMount = async() => {
     try {
-      const resp = await fetch("/startLogin");
+      const resp = await fetch("/api/startLogin");
 
       if (resp.status === 200) {
         const json = await resp.json();
@@ -35,7 +35,7 @@ class Login extends Component {
     e.preventDefault();
     try {
       const resp = await fetch(
-        "/login", {
+        "/api/login", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -51,8 +51,10 @@ class Login extends Component {
       console.log("status: " + resp.status);
       if (resp.status === 200) {
         this.props.history.push("/" + this.props.match.params.nextUrl);
-        if (this.props.onLoginSuccess !== undefined)
-          this.props.onLoginSuccess(this.state.userName);
+        if (this.props.onLoginSuccess !== undefined) {
+          const json = await resp.json();
+          this.props.onLoginSuccess(json);
+        }
       } else if (resp.status === 400) {
         const json = await resp.json();
         this.setState({

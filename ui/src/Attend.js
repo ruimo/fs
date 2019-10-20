@@ -37,7 +37,7 @@ class Attend extends Component {
   retrieveAgentRecord = async(agentName) => {
     try {
       const resp = await fetch(
-        "/registeredRecords?siteId=" + this.props.match.params.siteId + "&agentName=" + encodeURI(agentName)
+        "/api/registeredRecords?siteId=" + this.props.match.params.siteId + "&agentName=" + encodeURI(agentName)
       );
         
       if (resp.status === 200) {
@@ -112,7 +112,7 @@ class Attend extends Component {
     }
 
     try {
-      const resp = await fetch("/attend?siteId=" + this.props.match.params.siteId);
+      const resp = await fetch("/api/attend?siteId=" + this.props.match.params.siteId);
 
       if (resp.status === 200) {
         const json = await resp.json();
@@ -143,7 +143,7 @@ class Attend extends Component {
 
   registerRecord = async(phase) => {
     const resp = await fetch(
-      "/registerRecord", {
+      "/api/registerRecord", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -201,7 +201,7 @@ class Attend extends Component {
 
   overwriteRecord = async(phase) => {
     const resp = await fetch(
-      "/registerRecord", {
+      "/api/registerRecord", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

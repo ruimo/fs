@@ -5,34 +5,36 @@
 # Serve index page from public directory
 GET     /                           controllers.FrontendController.index()
 
-POST    /messages                   controllers.MessageController.messages()
+POST    /api/messages               controllers.MessageController.messages()
 
-GET     /loginInfo                  controllers.UserController.loginInfo()
-GET     /startLogin                 controllers.UserController.startLogin()
-POST    /login                      controllers.UserController.login()
-POST    /logoff                     controllers.UserController.logoff()
+GET     /api/loginInfo              controllers.UserController.loginInfo()
+GET     /api/startLogin             controllers.UserController.startLogin()
+POST    /api/login                  controllers.UserController.login()
+POST    /api/logoff                 controllers.UserController.logoff()
 
-POST    /changePassword             controllers.UserController.changePassword()
+POST    /api/changePassword         controllers.UserController.changePassword()
 
-GET     /admin                      controllers.AdminController.top
+GET     /api/admin                  controllers.AdminController.top
 
-GET     /timeZoneInfo               controllers.TimeZoneController.table
+GET     /api/timeZoneInfo           controllers.TimeZoneController.table
 
-POST    /createSite                 controllers.SiteController.createSite
-POST    /updateSite                 controllers.SiteController.updateSite(siteId: Long)
-GET     /listSiteToUpdate           controllers.SiteController.listSiteToUpdate(page: Int ?= 0, pageSize: Int ?= 10, orderBySpec ?= "site.created_at desc")
-GET     /listSite                   controllers.SiteController.listSite(page: Int ?= 0, pageSize: Int ?= 10, orderBySpec ?= "site.created_at desc")
-POST    /deleteSite                 controllers.SiteController.deleteSite(siteId: Long)
+POST    /api/createSite             controllers.SiteController.createSite
+POST    /api/updateSite             controllers.SiteController.updateSite(siteId: Long)
+GET     /api/listSiteToUpdate       controllers.SiteController.listSiteToUpdate(page: Int ?= 0, pageSize: Int ?= 10, orderBySpec ?= "site.created_at desc")
+GET     /api/listSite               controllers.SiteController.listSite(page: Int ?= 0, pageSize: Int ?= 10, orderBySpec ?= "site.created_at desc")
+POST    /api/deleteSite             controllers.SiteController.deleteSite(siteId: Long)
 POST    /api/deleteRecords          controllers.AgentRecordController.deleteRecords(siteId: Long)
+GET     /api/siteInfo               controllers.SiteController.siteInfo(siteId: Long)
 
-GET     /attend                     controllers.AttendController.index(siteId: Long)
-POST    /registerRecord             controllers.AgentRecordController.createAgentRecord
-GET     /registeredRecords          controllers.AgentRecordController.registeredRecords(siteId: Long, agentName: String)
-GET     /agentRecords               controllers.AgentRecordController.list(siteId: Long, page: Int ?= 0, pageSize: Int ?= 10, orderBySpec ?= "lifetime_ap_earned desc")
+GET     /api/attend                 controllers.AttendController.index(siteId: Long)
+POST    /api/registerRecord         controllers.AgentRecordController.createAgentRecord
+GET     /api/registeredRecords      controllers.AgentRecordController.registeredRecords(siteId: Long, agentName: String)
+GET     /api/agentRecords           controllers.AgentRecordController.list(siteId: Long, page: Int ?= 0, pageSize: Int ?= 10, orderBySpec ?= "lifetime_ap_earned desc")
 GET     /api/downloadAgentRecords   controllers.AgentRecordController.download(siteId: Long, orderBySpec: String)
+POST    /api/deleteAgentRecord      controllers.AgentRecordController.deleteAgentRecord(siteId: Long, agentName: String)
 
 # An example route (Prefix all API routes with apiPrefix defined in application.conf)
-GET     /version                    controllers.HomeController.version
+GET     /api/version                controllers.HomeController.version
 
 # Serve static assets under public directory
 GET     /*file                      controllers.FrontendController.assetOrDefault(file)

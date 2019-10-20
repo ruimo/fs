@@ -6,7 +6,7 @@ import java.net.URLDecoder
 import play.api.data._
 import play.api.data.Forms._
 import play.api.i18n.{I18nSupport, Lang, MessagesApi}
-import play.api.libs.json.{JsString, Json}
+import play.api.libs.json.{JsString, JsValue, Json}
 import javax.inject._
 import play.api._
 import play.api.db.DBApi
@@ -79,6 +79,12 @@ class UserController @Inject() (
     }
   }
 
+  def userToJson(user: User): JsValue = Json.obj(
+    "id" -> user.id.get.value.toString,
+    "name" -> user.name,
+    "role" ->  user.role.ordinal
+  )
+
   def login() = Action { implicit req =>
     logger.info("login called.")
     loginForm.bind(req.body.asJson.get).fold(
@@ -92,7 +98,7 @@ class UserController @Inject() (
             loginForm.fill(login).withGlobalError(Messages("nameAndPasswordNotMatched")).errorsAsJson
           )
           case Some(user) =>
-            Ok("").withSession(req.session + LoginSession.loginSessionString(user))
+            Ok(userToJson(user)).withSession(req.session + LoginSession.loginSessionString(user))
         }
       }
     )
@@ -125,19 +131,8 @@ class UserController @Inject() (
 
   def loginInfo = optAuthenticated (parsers.anyContent) { implicit req =>
     req.login match {
-      case None =>
-        Ok(Json.obj())
-      case Some(us) =>
-        val user = us.user
-        Ok(
-          Json.obj(
-            "user" -> Json.obj(
-              "id" -> user.id.get.value,
-              "name" -> user.name,
-              "role" ->  user.role.ordinal
-            )
-          )
-        )
+      case None => NotFound("")
+      case Some(us) => Ok(userToJson(us.user))
     }
   }
 }

@@ -27,9 +27,7 @@ class SiteTable extends Component {
           { key: 'agentRecordWillBeDeleted'},
           { key: 'delete'},
           { key: 'cancel'},
-          { key: 'deleteSite'},
-          { key: 'clearAgentRecords'},
-          { key: 'clearAgentRecordConfirm'}
+          { key: 'deleteSite'}
         ])
       });
     } catch (e) {
@@ -59,7 +57,7 @@ class SiteTable extends Component {
   deleteSite = async(siteId) => {
     try {
       const resp = await fetch(
-        "/deleteSite?siteId=" + siteId, {
+        "/api/deleteSite?siteId=" + siteId, {
           method: "POST",
           headers: {
             "Csrf-Token": "nocheck"
@@ -87,16 +85,6 @@ class SiteTable extends Component {
     this.props.history.push("/attend/" + siteId);
   }
 
-  showDeleteRecordDialog = (siteId, siteName) => {
-    this.setState({
-      clearAgentRecordsConfirm: true,
-      deleteCandidate: {
-        siteId: siteId,
-        siteName: siteName
-      }
-    });
-  }
-
   selectSite = (siteId, siteName, datetime, timezone) => {
     const dates = datetime.split(' ');
     const dateElems = dates[0].split('/');
@@ -110,38 +98,8 @@ class SiteTable extends Component {
     });
   }
 
-  clearAgentRecords = async(siteId) => {
-    try {
-      const resp = await fetch(
-        "/api/deleteRecords?siteId=" + siteId, {
-          method: "POST",
-          headers: {
-            "Csrf-Token": "nocheck"
-          },
-          body: ''
-        }
-      );
-
-      if (resp.status === 200) {
-        this.setState({
-          deleteCandidate: undefined,
-          clearAgentRecordsConfirm: false
-        });
-      } else if (resp.status === 403) {
-        this.setState({
-          deleteErrorMessage: this.msg('unknownError')
-        });
-      }
-    } catch (e) {
-      console.log("error: " + JSON.stringify(e));
-    }
-  }
-
-  cancelClearAgentRecords = (e) => {
-    this.setState({
-      deleteCandidate: undefined,
-      clearAgentRecordsConfirm: false
-    });
+  showAgentRecords = (siteId) => {
+    this.props.history.push("/agentRecords/" + siteId);
   }
 
   render() {
@@ -188,10 +146,9 @@ class SiteTable extends Component {
                           </button>)  : ""}
                       &nbsp;
                       { this.props.canDeleteSite ? (
-                        <button className="is-danger button clearAgentRecords" title={this.msg("clearAgentRecords")}
-                           onClick={ev => this.showDeleteRecordDialog(e.siteId, e.siteName)}>
+                        <button className="is-info button agentRecords" title={this.msg("agentRecords")}
+                           onClick={ev => this.showAgentRecords(e.siteId)}>
                           <i className="fas fa-poll-h"></i>&nbsp;
-                          <i className="fas fa-eraser"></i>
                         </button>)  : ""}
                     </td>
                   </tr>
@@ -225,31 +182,6 @@ class SiteTable extends Component {
               <a href="#deleteSite" className="button" onClick={(e) => {this.cancelDelete(e);}}>
                 {this.msg('cancel')}
               </a>
-            </div>
-            <div className={cx("notification is-danger errorMessage", {'is-active': this.state.deleteErrorMessage !== ''})}>
-              {this.state.deleteErrorMessage}
-            </div>
-          </div>
-          <button className="modal-close is-large" aria-label="close" onClick={(e) => {this.cancelDelete(e);}}></button>
-        </div>
-
-        <div className={cx("modal clearAgentRecordConfirm", {'is-active': this.state.clearAgentRecordsConfirm === true})}>
-          <div className="modal-background"></div>
-          <div className="modal-content">
-            <div className='dialogSiteName'>
-              { this.state.deleteCandidate !== undefined ? this.state.deleteCandidate.siteName : "" }
-            </div>
-            <div>
-              { this.msg('clearAgentRecordConfirm') }
-            </div>
-            <div className='dialogButtons'>
-              <button className="button is-danger clearAgentRecords"
-                 onClick={(e) => {this.clearAgentRecords(this.state.deleteCandidate.siteId);}}>
-                {this.msg('clearAgentRecords')}
-              </button>&nbsp;
-              <button className="button cancel" onClick={(e) => {this.cancelClearAgentRecords(e);}}>
-                {this.msg('cancel')}
-              </button>
             </div>
             <div className={cx("notification is-danger errorMessage", {'is-active': this.state.deleteErrorMessage !== ''})}>
               {this.state.deleteErrorMessage}
