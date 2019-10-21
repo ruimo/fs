@@ -74,3 +74,4 @@ clearAllAgentRecordsConfirm = Are you sure to delete all agent records for this 
 clearAgentRecordConfirm = Are you sure to delete this agent's record.? You cannot undone this operation.
 agentRecordMaintenance = Agent record maintenance
 all = All
+onlyOrphanRecord = Show only orphan records

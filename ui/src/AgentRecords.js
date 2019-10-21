@@ -22,7 +22,8 @@ class AgentRecords extends Component {
         nextPageExists: false,
         prevPageExists: false
       },
-      deleteErrorMessage: ''
+      deleteErrorMessage: '',
+      onlyOrphanRecord: false
     };
   }
 
@@ -119,7 +120,8 @@ class AgentRecords extends Component {
           {key: 'clearAllAgentRecords'},
           {key: 'clearAgentRecord'},
           {key: 'clearAllAgentRecordsConfirm'},
-          {key: 'clearAgentRecordConfirm'}
+          {key: 'clearAgentRecordConfirm'},
+          {key: 'onlyOrphanRecord'}
         ])
       });
     } catch (e) {
@@ -276,6 +278,12 @@ class AgentRecords extends Component {
     }
   }
 
+  onlyOrphanRecordChanged = (e) => {
+    this.setState({
+      onlyOrphanRecord: e.target.checked
+    });
+  }
+
   render() {
     const canClearAgentRecord = 
           this.props.loginUser !== undefined &&
@@ -425,13 +433,19 @@ class AgentRecords extends Component {
           <div className="panel-block">
             <div className="siteNameWrapper">
               <span className="siteName">{this.state.siteName}</span>
-              <a href="#registerAgentRecord" className="button is-info" onClick={this.registerMyRecord}>
+              <button className="button is-info" onClick={this.registerMyRecord}>
                 {this.msg('registerMyRecord')}
-              </a>
+              </button>
               &nbsp;
-              <a href={"/api/downloadAgentRecords?siteId=" + this.props.match.params.siteId + "&orderBySpec=" + encodeURI(this.state.pageControl.orderByCol + " " + this.state.pageControl.orderBySort)} className="button is-info" target="_blank" rel="noreferrer noopener">
+              <a href={"/api/downloadAgentRecords?siteId=" + this.props.match.params.siteId + "&orderBySpec=" + encodeURI(this.state.pageControl.orderByCol + " " + this.state.pageControl.orderBySort)}
+                 className="button is-info" target="_blank" rel="noreferrer noopener">
                 {this.msg('downloadWithTsv')}
               </a>
+              &nbsp;
+              <label className="checkbox" id="onlyOrphanRecord">
+                <input type="checkbox" checked={this.state.onlyOrphanRecord} onChange={this.onlyOrphanRecordChanged}/>
+                {this.msg("onlyOrphanRecord")}
+              </label>
             </div>
           </div>
 

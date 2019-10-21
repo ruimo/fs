@@ -107,3 +107,4 @@ clearAllAgentRecordsConfirm = このサイトの全エージェント・レコ�
 clearAgentRecordConfirm = このエージェントのレコードを削除してよろしいですか？ この操作は取消できません。
 agentRecordMaintenance = エージェント・レコード管理
 all = 全て
+onlyOrphanRecord = 不完全レコードのみ表示

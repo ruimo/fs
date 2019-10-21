@@ -49,3 +49,7 @@ tbody .startAp, tbody .endAp, tbody .earnedAp {
     background-color: #0099FF;
 }
 
+#onlyOrphanRecord {
+    vertical-align: bottom;
+    margin-left: 0.5em;
+}

@@ -140,16 +140,16 @@ class SiteTable extends Component {
                           </button>)  : ""}
                       &nbsp;
                       { this.props.canDeleteSite ? (
-                        <button className="is-danger button" title={this.msg("deleteSite")}
-                           onClick={ev => this.showDeleteDialog(e.siteId, e.siteName)}>
-                          <i className="far fa-trash-alt"></i>
-                          </button>)  : ""}
-                      &nbsp;
-                      { this.props.canDeleteSite ? (
                         <button className="is-info button agentRecords" title={this.msg("agentRecords")}
                            onClick={ev => this.showAgentRecords(e.siteId)}>
                           <i className="fas fa-poll-h"></i>&nbsp;
                         </button>)  : ""}
+                      &nbsp;
+                      { this.props.canDeleteSite ? (
+                        <button className="is-danger button" title={this.msg("deleteSite")}
+                           onClick={ev => this.showDeleteDialog(e.siteId, e.siteName)}>
+                          <i className="far fa-trash-alt"></i>
+                          </button>)  : ""}
                     </td>
                   </tr>
                 )
