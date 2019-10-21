@@ -232,6 +232,114 @@ class AgentRecordSpec extends Specification with InjectorSupport {
       }
     }
 
+    "list orphan" in {
+      implicit val app: Application = GuiceApplicationBuilder().configure(inMemoryDatabase()).build()
+      inject[Database].withConnection { implicit conn =>
+        val repo = inject[AgentRecordRepo]
+        val user = inject[UserRepo].create("user", "email", 0, 0, UserRole.ADMIN)
+        val site0 = inject[SiteRepo].create("site0", Instant.now(), ZoneId.systemDefault(), user.id.get)
+        val site1 = inject[SiteRepo].create("site1", Instant.now(), ZoneId.systemDefault(), user.id.get)
+        val now = Instant.now()
+
+        val rec0 = repo.create(site0.id.get, "enl", "agentName0", 1, 4L, 3, AgentRecordPhase.START, "tsv", now)
+        val rec1 = repo.create(site0.id.get, "enl", "agentName3", 2, 2L, 6, AgentRecordPhase.END, "tsv", now.plusMillis(5L))
+
+        val rec2 = repo.create(site0.id.get, "enl", "agentName1", 1, 2L, 3, AgentRecordPhase.START, "tsv", now)
+        val rec3 = repo.create(site0.id.get, "enl", "agentName1", 11, 32L, 53, AgentRecordPhase.END, "tsv", now.plusMillis(100L))
+
+        val rec5 = repo.create(site0.id.get, "enl", "agentName2", 10, 20L, 30, AgentRecordPhase.START, "tsv", now.plusMillis(123L))
+        val rec6 = repo.create(site0.id.get, "enl", "agentName2", 100, 49L, 90, AgentRecordPhase.END, "tsv", now.plusMillis(50L))
+
+        val rec7 = repo.create(site1.id.get, "enl", "agentName2", 110, 120L, 130, AgentRecordPhase.START, "tsv", now.plusMillis(12L))
+        val rec8 = repo.create(site1.id.get, "enl", "agentName2", 200, 190L, 170, AgentRecordPhase.END, "tsv", now.plusMillis(5L))
+
+        val rec9 = repo.create(site1.id.get, "enl", "agentName0", 120, 220L, 330, AgentRecordPhase.START, "tsv", now.plusMillis(22L))
+        val recA = repo.create(site1.id.get, "enl", "agentName5", 210, 290L, 370, AgentRecordPhase.END, "tsv", now.plusMillis(15L))
+
+        // site0
+        // agent      lv  ap  distWlk phase createAt
+        // agentName0 1    2        3     0      now
+        // agentName3 2    4        6     1      now + 5
+
+        // site1
+        // agent      lv   ap  distWlk phase createAt
+        // agentName0 120 220      330     0 now + 22
+        // agentName5 210 290      370     1 now + 15
+
+        doWith(repo.listOrphan(site0.id.get, 0, 10, OrderBy("agent_name")).records) { list =>
+          list.size === 2
+          list(0) === rec0
+          list(1) === rec1
+        }
+       
+        doWith(repo.listOrphan(site0.id.get, 0, 10, OrderBy("agent_name desc")).records) { list =>
+          list.size === 2
+          list(0) === rec1
+          list(1) === rec0
+        }
+
+        doWith(repo.listOrphan(site0.id.get, 0, 10, OrderBy("agent_level")).records) { list =>
+          list.size === 2
+          list(0) === rec0
+          list(1) === rec1
+        }
+
+        doWith(repo.listOrphan(site0.id.get, 0, 10, OrderBy("agent_level desc")).records) { list =>
+          list.size === 2
+          list(0) === rec1
+          list(1) === rec0
+        }
+
+        doWith(repo.listOrphan(site0.id.get, 0, 10, OrderBy("distance_walked")).records) { list =>
+          list.size === 2
+          list(0) === rec0
+          list(1) === rec1
+        }
+
+        doWith(repo.listOrphan(site0.id.get, 0, 10, OrderBy("distance_walked desc")).records) { list =>
+          list.size === 2
+          list(0) === rec1
+          list(1) === rec0
+        }
+
+        doWith(repo.listOrphan(site1.id.get, 0, 10, OrderBy("agent_name")).records) { list =>
+          list.size === 2
+          list(0) === rec9
+          list(1) === recA
+        }
+       
+        doWith(repo.listOrphan(site1.id.get, 0, 10, OrderBy("agent_name desc")).records) { list =>
+          list.size === 2
+          list(0) === recA
+          list(1) === rec9
+        }
+
+        doWith(repo.listOrphan(site1.id.get, 0, 10, OrderBy("agent_level")).records) { list =>
+          list.size === 2
+          list(0) === rec9
+          list(1) === recA
+        }
+
+        doWith(repo.listOrphan(site1.id.get, 0, 10, OrderBy("agent_level desc")).records) { list =>
+          list.size === 2
+          list(0) === recA
+          list(1) === rec9
+        }
+
+        doWith(repo.listOrphan(site1.id.get, 0, 10, OrderBy("distance_walked")).records) { list =>
+          list.size === 2
+          list(0) === rec9
+          list(1) === recA
+        }
+
+        doWith(repo.listOrphan(site1.id.get, 0, 10, OrderBy("distance_walked desc")).records) { list =>
+          list.size === 2
+          list(0) === recA
+          list(1) === rec9
+        }
+      }
+    }
+
     "Can download tsv" in {
       implicit val app: Application = GuiceApplicationBuilder().configure(inMemoryDatabase()).build()
       inject[Database].withConnection { implicit conn =>
@@ -363,6 +471,97 @@ class AgentRecordSpec extends Specification with InjectorSupport {
               "10", "12", "2",
               "1124", "2000", (2000 - 1124).toString, // 876
               "1245", "2401", (2401 - 1245).toString // 1156
+            )
+
+            br.readLine === null
+          }
+        }.get
+
+        1 === 1
+      }
+    }
+
+    "Can download orphan tsv" in {
+      implicit val app: Application = GuiceApplicationBuilder().configure(inMemoryDatabase()).build()
+      inject[Database].withConnection { implicit conn =>
+        val repo = inject[AgentRecordRepo]
+        val user = inject[UserRepo].create("user", "email", 0, 0, UserRole.ADMIN)
+        val site = inject[SiteRepo].create("site0", Instant.now(), ZoneId.systemDefault(), user.id.get)
+
+        val recStart0 = repo.create(
+          site.id.get, "Enlightened", "agent00", 8, 123L, 345, AgentRecordPhase.START, "tsv00"
+        )
+        val recEnd0 = repo.create(
+          site.id.get, "Enlightened", "agent00", 9, 234L, 400, AgentRecordPhase.END, "tsv01"
+        )
+
+        val recStart1 = repo.create(
+          site.id.get, "Enlightened", "agent01", 10, 123L, 245, AgentRecordPhase.START, "tsv02"
+        )
+        val recEnd1 = repo.create(
+          site.id.get, "Enlightened", "agent01", 11, 1000L, 1400, AgentRecordPhase.END, "tsv03"
+        )
+
+        val recStart2 = repo.create(
+          site.id.get, "Enlightened", "agent02", 10, 1123L, 1245, AgentRecordPhase.START, "tsv04"
+        )
+        val recEnd2 = repo.create(
+          site.id.get, "Enlightened", "agent02", 12, 2000L, 2400, AgentRecordPhase.END, "tsv05"
+        )
+
+        val recStart3 = repo.create(
+          site.id.get, "Enlightened", "agent03", 10, 1123L, 1245, AgentRecordPhase.START, "tsv04"
+        )
+        val recEnd4 = repo.create(
+          site.id.get, "Enlightened", "agent04", 12, 2000L, 2400, AgentRecordPhase.END, "tsv05"
+        )
+        val recStart5 = repo.create(
+          site.id.get, "Enlightened", "agent05", 11, 2123L, 2245, AgentRecordPhase.START, "tsv04"
+        )
+
+        import com.ruimo.scoins.LoanPattern.autoCloseableCloser
+        PathUtil.withTempFile(None, None) { path =>
+          repo.downloadTsv(site.id.get, OrderBy("agent_name asc"), path)
+          LoanPattern.using(new BufferedReader(new FileReader(path.toFile))) { br =>
+            val headers = Parser.parseOneLine(br.readLine, '\t').get
+            headers === Seq(
+              "Agent Faction", "Agent Name", "Level", "Lifetime AP", "Distance Walked"
+            )
+
+            Parser.parseOneLine(br.readLine, '\t').get === Seq(
+              "Enlightened", "agent03", "10", "1123", "1245"
+            )
+
+            Parser.parseOneLine(br.readLine, '\t').get === Seq(
+              "Enlightened", "agent04", "12", "2000", "2400"
+            )
+
+            Parser.parseOneLine(br.readLine, '\t').get === Seq(
+              "Enlightened", "agent05", "11", "2123", "2245"
+            )
+
+            br.readLine === null
+          }
+        }.get
+
+        PathUtil.withTempFile(None, None) { path =>
+          repo.downloadTsv(site.id.get, OrderBy("lifetime_ap_earned desc"), path)
+          LoanPattern.using(new BufferedReader(new FileReader(path.toFile))) { br =>
+            val headers = Parser.parseOneLine(br.readLine, '\t').get
+            headers === Seq(
+              "Agent Faction", "Agent Name", "Level", "Lifetime AP", "Distance Walked"
+            )
+
+            Parser.parseOneLine(br.readLine, '\t').get === Seq(
+              "Enlightened", "agent05", "11", "2123", "2245"
+            )
+
+            Parser.parseOneLine(br.readLine, '\t').get === Seq(
+              "Enlightened", "agent04", "12", "2000", "2400"
+            )
+
+            Parser.parseOneLine(br.readLine, '\t').get === Seq(
+              "Enlightened", "agent03", "10", "1123", "1245"
             )
 
             br.readLine === null

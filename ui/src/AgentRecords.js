@@ -31,9 +31,15 @@ class AgentRecords extends Component {
     return this.state.messages(key);
   }
 
-  retrieveRecords = async(page, orderBy) => {
+  renderAgentRecords = async(page, orderBy, onlyOrphanRec) => {
+    const siteId = this.props.match.params.siteId;
+    const onlyOrphanRecord = onlyOrphanRec === undefined ? this.state.onlyOrphanRecord : onlyOrphanRec;
+
     try {
-      const url = "/api/agentRecords?siteId=" + this.props.match.params.siteId + "&page=" + page + "&orderBySpec=" + encodeURI(orderBy);
+      const url = "/api/agentRecords?siteId=" + this.props.match.params.siteId +
+            "&page=" + page +
+            "&orderBySpec=" + encodeURI(orderBy) +
+            "&mode=" + (onlyOrphanRecord ? 1: 0);
       const resp = await fetch(url);
 
       if (resp.status === 200) {
@@ -61,10 +67,6 @@ class AgentRecords extends Component {
         globalError: this.msg('error.unknown')
       });
     }
-  }
-
-  renderAgentRecords = async(page, orderBy) => {
-    const siteId = this.props.match.params.siteId;
 
     try {
       const resp = await fetch("/api/siteInfo?siteId=" + siteId)
@@ -90,8 +92,6 @@ class AgentRecords extends Component {
         globalError: this.msg('error.unknown')
       });
     }
-
-    this.retrieveRecords(page, orderBy);
   }
 
   componentDidMount = async() => {
@@ -121,7 +121,10 @@ class AgentRecords extends Component {
           {key: 'clearAgentRecord'},
           {key: 'clearAllAgentRecordsConfirm'},
           {key: 'clearAgentRecordConfirm'},
-          {key: 'onlyOrphanRecord'}
+          {key: 'onlyOrphanRecord'},
+          {key: 'abbrevLevel'},
+          {key: 'abbrevAp'},
+          {key: 'abbrevWalked'}
         ])
       });
     } catch (e) {
@@ -279,21 +282,22 @@ class AgentRecords extends Component {
   }
 
   onlyOrphanRecordChanged = (e) => {
-    this.setState({
-      onlyOrphanRecord: e.target.checked
-    });
+    const onlyOrphanRecord = e.target.checked;
+
+    this.setState({ onlyOrphanRecord });
+
+    this.renderAgentRecords(
+      0,
+      onlyOrphanRecord ? "agent_name" : "lifetime_ap_earned DESC",
+      onlyOrphanRecord
+    );
   }
 
-  render() {
+  createTable = () => {
     const canClearAgentRecord = 
           this.props.loginUser !== undefined &&
           this.state.siteInfo !== undefined &&
           this.state.siteInfo.ownerUserId === this.props.loginUser.id;
-
-    const globalError = this.state.globalError === '' ? "" :
-          <article className="message is-danger">
-            <div className="message-body">{this.state.globalError}</div>
-          </article>;
 
     const removeRecordHeader = 
           <th className="removeAllAgentRecords">
@@ -316,61 +320,127 @@ class AgentRecords extends Component {
       );
     };
 
-    const table = this.state.records.length === 0 ?
-          <span className="emptyMessage">{this.msg('recordEmpty')}</span>
-          :
-          <table className="table score">
-            <thead>
-              <tr>
-                <th className="rank">{this.msg('rank')}</th>
-                <th className={cx("agentName sortable", {"ordered": this.state.pageControl.orderByCol === "agent_name"})}
-                    onClick={() => this.sort('agent_name')}>
-                  {this.renderOrderByChar('agent_name')}{this.msg('abbrevAgentName')}
-                </th>
-                <th className="faction">{this.msg('abbrevFaction')}</th>
-                <th className="startLevel">{this.msg('abbrevStartLevel')}</th>
-                <th className="endLevel">{this.msg('abbrevEndLevel')}</th>
-                <th className="earnedLevel">{this.msg('abbrevEarnedLevel')}</th>
-                <th className="startAp">{this.msg('abbrevStartAp')}</th>
-                <th className="endAp">{this.msg('abbrevEndAp')}</th>
-                <th className={cx("earnedAp sortable", {"ordered": this.state.pageControl.orderByCol === "lifetime_ap_earned"})}
-                    onClick={() => this.sort('lifetime_ap_earned')}>
-                  {this.renderOrderByNum('lifetime_ap_earned')}{this.msg('abbrevEarnedAp')}
-                </th>
-                <th className="startWalked">{this.msg('abbrevStartWalked')}</th>
-                <th className="endWalked">{this.msg('abbrevEndWalked')}</th>
-                <th className={cx("earnedWalked sortable", {"ordered": this.state.pageControl.orderByCol === "distance_walked_earned"})}
-                    onClick={() => this.sort('distance_walked_earned')}>
-                  {this.renderOrderByNum('distance_walked_earned')}{this.msg('abbrevEarnedWalked')}
-                </th>
-                <th className="updatedTime">{this.msg('abbrevUpdatedTime')}</th>
-                {removeRecordHeader}
-              </tr>
-            </thead>
+    return (
+      this.state.records.length === 0 ?
+        <span className="emptyMessage">{this.msg('recordEmpty')}</span>
+        :
+        <table className="table score normal">
+          <thead>
+            <tr>
+              <th className="rank">{this.msg('rank')}</th>
+              <th className={cx("agentName sortable", {"ordered": this.state.pageControl.orderByCol === "agent_name"})}
+                  onClick={() => this.sort('agent_name')}>
+                {this.renderOrderByChar('agent_name')}{this.msg('abbrevAgentName')}
+              </th>
+              <th className="faction">{this.msg('abbrevFaction')}</th>
+              <th className="startLevel">{this.msg('abbrevStartLevel')}</th>
+              <th className="endLevel">{this.msg('abbrevEndLevel')}</th>
+              <th className="earnedLevel">{this.msg('abbrevEarnedLevel')}</th>
+              <th className="startAp">{this.msg('abbrevStartAp')}</th>
+              <th className="endAp">{this.msg('abbrevEndAp')}</th>
+              <th className={cx("earnedAp sortable", {"ordered": this.state.pageControl.orderByCol === "lifetime_ap_earned"})}
+                  onClick={() => this.sort('lifetime_ap_earned')}>
+                {this.renderOrderByNum('lifetime_ap_earned')}{this.msg('abbrevEarnedAp')}
+              </th>
+              <th className="startWalked">{this.msg('abbrevStartWalked')}</th>
+              <th className="endWalked">{this.msg('abbrevEndWalked')}</th>
+              <th className={cx("earnedWalked sortable", {"ordered": this.state.pageControl.orderByCol === "distance_walked_earned"})}
+                  onClick={() => this.sort('distance_walked_earned')}>
+                {this.renderOrderByNum('distance_walked_earned')}{this.msg('abbrevEarnedWalked')}
+              </th>
+              <th className="updatedTime">{this.msg('abbrevUpdatedTime')}</th>
+              {removeRecordHeader}
+            </tr>
+          </thead>
             
-            <tbody>
-              {
-                this.state.records.map((e) =>
-                  <tr key={e.agentName}>
-                    <td className="rank">{e.rank + 1}</td>
-                    <td className="agentName">{e.agentName}</td>
-                    <td className="faction">{e.faction}</td>
-                    <td className="startLevel">{e.startLevel}</td>
-                    <td className="endLevel">{e.endLevel}</td>
-                    <td className="earnedLevel">{e.earnedLevel}</td>
-                    <td className="startAp">{Number(e.startAp).toLocaleString()}</td>
-                    <td className="endAp">{Number(e.endAp).toLocaleString()}</td>
-                    <td className="earnedAp">{Number(e.earnedAp).toLocaleString()}</td>
-                    <td className="startWalked">{Number(e.startWalked).toLocaleString()}</td>
-                    <td className="endWalked">{Number(e.endWalked).toLocaleString()}</td>
-                    <td className="earnedWalked">{Number(e.earnedWalked).toLocaleString()}</td>
-                    <td className="updatedTime">{e.createdAt}</td>
-                    {removeRecordRow(e)}
-                  </tr>
-                )
-              }
-            </tbody>
-          </table>;
+          <tbody>
+            {
+              this.state.records.map((e) =>
+                <tr key={e.agentName}>
+                  <td className="rank">{e.rank + 1}</td>
+                  <td className="agentName">{e.agentName}</td>
+                  <td className="faction">{e.faction}</td>
+                  <td className="startLevel">{e.startLevel}</td>
+                  <td className="endLevel">{e.endLevel}</td>
+                  <td className="earnedLevel">{e.earnedLevel}</td>
+                  <td className="startAp">{Number(e.startAp).toLocaleString()}</td>
+                  <td className="endAp">{Number(e.endAp).toLocaleString()}</td>
+                  <td className="earnedAp">{Number(e.earnedAp).toLocaleString()}</td>
+                  <td className="startWalked">{Number(e.startWalked).toLocaleString()}</td>
+                  <td className="endWalked">{Number(e.endWalked).toLocaleString()}</td>
+                  <td className="earnedWalked">{Number(e.earnedWalked).toLocaleString()}</td>
+                  <td className="updatedTime">{e.createdAt}</td>
+                  {removeRecordRow(e)}
+                </tr>
+              )
+            }
+          </tbody>
+        </table>
+    );
+  }
+
+  createOrphanTable = () => {
+    const canClearAgentRecord = 
+          this.props.loginUser !== undefined &&
+          this.state.siteInfo !== undefined &&
+          this.state.siteInfo.ownerUserId === this.props.loginUser.id;
+
+    const removeRecordRow = (row) => {
+      return (
+        <td className="removeRecord">
+          { canClearAgentRecord ?
+            <button className="is-danger button" title="removeAgentRecord"
+                    onClick={ev => this.showDeleteAgentRecordDialog(row.agentName)}>
+              <i className="far fa-trash-alt"></i>
+            </button>: <span className="placeHolder">&nbsp;</span>}
+        </td>
+      );
+    };
+
+    return (
+      this.state.records.length === 0 ?
+        <span className="emptyMessage">{this.msg('recordEmpty')}</span>
+        :
+        <table className="table score orphan">
+          <thead>
+            <tr>
+              <th className={cx("agentName sortable", {"ordered": this.state.pageControl.orderByCol === "agent_name"})}
+                  onClick={() => this.sort('agent_name')}>
+                {this.renderOrderByChar('agent_name')}{this.msg('abbrevAgentName')}
+              </th>
+              <th className="faction">{this.msg('abbrevFaction')}</th>
+              <th className="agentLevel">{this.msg('abbrevLevel')}</th>
+              <th className="ap">{this.msg('abbrevAp')}</th>
+              <th className="walked">{this.msg('abbrevWalked')}</th>
+              <th className="updatedTime">{this.msg('abbrevUpdatedTime')}</th>
+              <th></th>
+            </tr>
+          </thead>
+            
+          <tbody>
+            {
+              this.state.records.map((e) =>
+                <tr key={e.agentName}>
+                  <td className="agentName">{e.agentName}</td>
+                  <td className="faction">{e.faction}</td>
+                  <td className="agentLevel">{e.level}</td>
+                  <td className="ap">{Number(e.ap).toLocaleString()}</td>
+                  <td className="walked">{Number(e.walked).toLocaleString()}</td>
+                  <td className="updatedTime">{e.createdAt}</td>
+                  {removeRecordRow(e)}
+                </tr>
+              )
+            }
+          </tbody>
+        </table>
+    );
+  }
+
+  render() {
+    const globalError = this.state.globalError === '' ? "" :
+          <article className="message is-danger">
+            <div className="message-body">{this.state.globalError}</div>
+          </article>;
 
     const paginator = this.state.pagination === undefined ? "" :
           <nav className="pagination" role="navigation" aria-label="pagination">
@@ -452,7 +522,7 @@ class AgentRecords extends Component {
           <div className="panel-block">
             <div className="recordsWrapper">
               <div className="tableWrapper">
-                {table}
+                {this.state.onlyOrphanRecord ? this.createOrphanTable() : this.createTable()}
               </div>
               <div className="paginatorWrapper">{paginator}</div>
             </div>

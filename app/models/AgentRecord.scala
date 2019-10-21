@@ -231,6 +231,44 @@ class AgentRecordRepo @Inject() (
     PagedRecords(page, pageSize, (count + pageSize - 1) / pageSize, orderBy, records)
   }
 
+  val listOrphanBaseSql = """
+      from agent_record r0
+      where 1 = (
+        select count(*) from agent_record r1
+        where r0.agent_name = r1.agent_name and site_id = {siteId}
+      ) and site_id = {siteId}
+    """
+
+  def listOrphan(
+    siteId: SiteId, page: Int = 0, pageSize: Int = 10, orderBy: OrderBy = OrderBy("agent_name asc")
+  )(
+    implicit conn: Connection
+  ): PagedRecords[AgentRecord] = {
+    import scala.language.postfixOps
+
+    val offset: Int = pageSize * page
+    
+    val records: Seq[AgentRecord] = SQL(
+      "select * " + listOrphanBaseSql + s"""
+      order by $orderBy limit {pageSize} offset {offset}
+      """
+    ).on(
+      'siteId -> siteId.value,
+      'pageSize -> pageSize,
+      'offset -> offset
+    ).as(
+      simple *
+    )
+
+    val count = SQL(
+      "select count(*) " + listOrphanBaseSql
+    ).on(
+      'siteId -> siteId.value
+    ).as(SqlParser.scalar[Long].single)
+
+    PagedRecords(page, pageSize, (count + pageSize - 1) / pageSize, orderBy, records)
+  }
+
   def downloadTsv(siteId: SiteId, orderBy: OrderBy, path: Path)(
     implicit conn: Connection
   ): Unit = {
@@ -270,6 +308,39 @@ class AgentRecordRepo @Inject() (
         listCols + listBaseSql + s"order by $orderBy"
       ).on(
         'siteId -> siteId.value,
+      ).withResult(go)
+    }.get
+  }
+
+  def downloadOrphanTsv(siteId: SiteId, orderBy: OrderBy, path: Path)(
+    implicit conn: Connection
+  ): Unit = {
+    import scala.language.postfixOps
+    import com.ruimo.scoins.LoanPattern.autoCloseableCloser
+
+    LoanPattern.using(new PrintWriter(path.toFile)) { pr =>
+      @tailrec def go(c: Option[Cursor]): Unit = c match {
+        case Some(cursor) =>
+          cursor.row.as(simple) match {
+            case scala.util.Success(rec) =>
+              pr.println(
+                Seq(rec.faction, rec.agentName, rec.agentLevel, rec.lifetimeAp, rec.distanceWalked).mkString("\t")
+              )
+
+              go(cursor.next)
+            case Failure(f) => throw f
+          }
+        case None =>
+      }
+
+      pr.println(
+        Seq("Agent Faction", "Agent Name", "Level", "Lifetime AP", "Distance Walked").mkString("\t")
+      )
+
+      SQL(
+        "select * " + listOrphanBaseSql + s"order by $orderBy"
+      ).on(
+        'siteId -> siteId.value
       ).withResult(go)
     }.get
   }

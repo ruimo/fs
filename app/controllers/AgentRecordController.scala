@@ -96,58 +96,100 @@ class AgentRecordController @Inject() (
     }
   }
 
-  def list(siteId: Long, page: Int, pageSize: Int, orderBySpec: String) = Action { implicit req =>
+  def list(siteId: Long, page: Int, pageSize: Int, orderBySpec: String, mode: Int) = Action { implicit req =>
     db.withConnection { implicit conn =>
       val site = siteRepo(SiteId(siteId))
 
-      val records: PagedRecords[AgentRecordSumEntry] = agentRecordRepo.list(SiteId(siteId), page, pageSize, OrderBy(orderBySpec))
-      val pagination: Option[Pagination] = Pagination.get(records)
-      Ok(
-        pagination.map { p =>
-          Json.obj(
-            "pagination" -> Json.obj(
-              "topButtonExists" -> p.topButtonExists,
-              "lastButtonExists" -> p.lastButtonExists,
-              "startPage" -> p.startPage,
-              "showPageCount" -> p.showPageCount
-            )
-          )
-        }.getOrElse(Json.obj()) ++
-        Json.obj(
-          "pageControl" -> Json.obj(
-            "currentPage" -> records.currentPage,
-            "pageSize" -> records.pageSize,
-            "pageCount" -> records.pageCount,
-            "nextPageExists" -> records.nextPageExists,
-            "prevPageExists" -> records.prevPageExists,
-            "orderByCol" -> records.orderBy.columnName,
-            "orderBySort" -> records.orderBy.order.toString
-          ),
-          "site" -> Json.obj(
-            "siteName" -> site.siteName
-          ),
-          "table" -> JsArray(
-            records.records.zipWithIndex.map { case (r, i) =>
-              Json.obj(
-                "rank" -> (records.offset + i),
-                "faction" -> r.faction,
-                "agentName" -> r.agentName,
-                "faction" -> r.faction,
-                "startLevel" -> r.startAgentLevel,
-                "endLevel" -> r.endAgentLevel,
-                "earnedLevel" -> r.earnedAgentLevel,
-                "startAp" -> r.startLifetimeAp,
-                "endAp" -> r.endLifetimeAp,
-                "earnedAp" -> r.earnedLifetimeAp,
-                "startWalked" -> r.startDistanceWalked,
-                "endWalked" -> r.endDistanceWalked,
-                "earnedWalked" -> r.earnedDistanceWalked,
-                "createdAt" -> formatter.format(ZonedDateTime.ofInstant(r.createdAt, site.heldOnZoneId))
+      if (mode == 0) {
+        val records: PagedRecords[AgentRecordSumEntry] = agentRecordRepo.list(SiteId(siteId), page, pageSize, OrderBy(orderBySpec))
+        val pagination: Option[Pagination] = Pagination.get(records)
+        Ok(
+          pagination.map { p =>
+            Json.obj(
+              "pagination" -> Json.obj(
+                "topButtonExists" -> p.topButtonExists,
+                "lastButtonExists" -> p.lastButtonExists,
+                "startPage" -> p.startPage,
+                "showPageCount" -> p.showPageCount
               )
-            }.toSeq
-          )
+            )
+          }.getOrElse(Json.obj()) ++
+            Json.obj(
+              "pageControl" -> Json.obj(
+                "currentPage" -> records.currentPage,
+                "pageSize" -> records.pageSize,
+                "pageCount" -> records.pageCount,
+                "nextPageExists" -> records.nextPageExists,
+                "prevPageExists" -> records.prevPageExists,
+                "orderByCol" -> records.orderBy.columnName,
+                "orderBySort" -> records.orderBy.order.toString
+              ),
+              "site" -> Json.obj(
+                "siteName" -> site.siteName
+              ),
+              "table" -> JsArray(
+                records.records.zipWithIndex.map { case (r, i) =>
+                  Json.obj(
+                    "rank" -> (records.offset + i),
+                    "agentName" -> r.agentName,
+                    "faction" -> r.faction,
+                    "startLevel" -> r.startAgentLevel,
+                    "endLevel" -> r.endAgentLevel,
+                    "earnedLevel" -> r.earnedAgentLevel,
+                    "startAp" -> r.startLifetimeAp,
+                    "endAp" -> r.endLifetimeAp,
+                    "earnedAp" -> r.earnedLifetimeAp,
+                    "startWalked" -> r.startDistanceWalked,
+                    "endWalked" -> r.endDistanceWalked,
+                    "earnedWalked" -> r.earnedDistanceWalked,
+                    "createdAt" -> formatter.format(ZonedDateTime.ofInstant(r.createdAt, site.heldOnZoneId))
+                  )
+                }.toSeq
+              )
+            )
         )
-      )
+      } else {
+        val records: PagedRecords[AgentRecord] = agentRecordRepo.listOrphan(SiteId(siteId), page, pageSize, OrderBy(orderBySpec))
+        val pagination: Option[Pagination] = Pagination.get(records)
+        Ok(
+          pagination.map { p =>
+            Json.obj(
+              "pagination" -> Json.obj(
+                "topButtonExists" -> p.topButtonExists,
+                "lastButtonExists" -> p.lastButtonExists,
+                "startPage" -> p.startPage,
+                "showPageCount" -> p.showPageCount
+              )
+            )
+          }.getOrElse(Json.obj()) ++
+            Json.obj(
+              "pageControl" -> Json.obj(
+                "currentPage" -> records.currentPage,
+                "pageSize" -> records.pageSize,
+                "pageCount" -> records.pageCount,
+                "nextPageExists" -> records.nextPageExists,
+                "prevPageExists" -> records.prevPageExists,
+                "orderByCol" -> records.orderBy.columnName,
+                "orderBySort" -> records.orderBy.order.toString
+              ),
+              "site" -> Json.obj(
+                "siteName" -> site.siteName
+              ),
+              "table" -> JsArray(
+                records.records.zipWithIndex.map { case (r, i) =>
+                  Json.obj(
+                    "agentName" -> r.agentName,
+                    "faction" -> r.faction,
+                    "level" -> r.agentLevel,
+                    "ap" -> r.lifetimeAp,
+                    "walked" -> r.distanceWalked,
+                    "createdAt" -> formatter.format(ZonedDateTime.ofInstant(r.createdAt, site.heldOnZoneId))
+                  )
+                }.toSeq
+              )
+            )
+        )
+      }
     }
   }
 
