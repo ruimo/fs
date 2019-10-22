@@ -267,7 +267,7 @@ class AgentRecords extends Component {
           globalError: '',
           deleteErrorMessage: ''
         });
-        this.retrieveRecords(
+        this.renderAgentRecords(
           this.state.pageControl.currentPage,
           this.state.pageControl.orderByCol + " " + this.state.pageControl.orderBySort
         );
