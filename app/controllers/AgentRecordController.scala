@@ -221,7 +221,9 @@ class AgentRecordController @Inject() (
     }
   }
 
-  def deleteAgentRecord(sid: Long, agentName: String) = authenticated(parsers.anyContent) { implicit req =>
+  def deleteAgentRecord(
+    sid: Long, agentName: String, phase: Option[Int]
+  ) = authenticated(parsers.anyContent) { implicit req =>
     val userId: Option[UserId] = req.login.user.id
     val siteId = SiteId(sid)
     db.withConnection { implicit conn =>
@@ -229,7 +231,13 @@ class AgentRecordController @Inject() (
         case None => Ok("")
         case Some(site) =>
           if (site.owner == userId.get || req.login.isSuper) {
-            agentRecordRepo.deleteRecordsByAgentName(agentName)
+            phase match {
+              case None =>
+                agentRecordRepo.deleteRecordsByAgentName(siteId, agentName)
+              case Some(phaseIdx) =>
+                agentRecordRepo.delete(siteId, agentName, AgentRecordPhase.byIndex(phaseIdx))
+            }
+
             Ok("")
           } else {
             Forbidden("")

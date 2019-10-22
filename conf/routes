@@ -31,7 +31,7 @@ POST    /api/registerRecord         controllers.AgentRecordController.createAgen
 GET     /api/registeredRecords      controllers.AgentRecordController.registeredRecords(siteId: Long, agentName: String)
 GET     /api/agentRecords           controllers.AgentRecordController.list(siteId: Long, page: Int ?= 0, pageSize: Int ?= 10, orderBySpec ?= "lifetime_ap_earned desc", mode: Int)
 GET     /api/downloadAgentRecords   controllers.AgentRecordController.download(siteId: Long, orderBySpec: String)
-POST    /api/deleteAgentRecord      controllers.AgentRecordController.deleteAgentRecord(siteId: Long, agentName: String)
+POST    /api/deleteAgentRecord      controllers.AgentRecordController.deleteAgentRecord(siteId: Long, agentName: String, phase: Option[Int])
 
 # An example route (Prefix all API routes with apiPrefix defined in application.conf)
 GET     /api/version                controllers.HomeController.version

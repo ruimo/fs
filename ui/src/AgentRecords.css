@@ -53,3 +53,12 @@ tbody .startAp, tbody .endAp, tbody .earnedAp {
     vertical-align: bottom;
     margin-left: 0.5em;
 }
+
+.dialogButtons {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.dialogButtons .button {
+    margin: 0.2em;
+}

@@ -124,7 +124,8 @@ class AgentRecords extends Component {
           {key: 'onlyOrphanRecord'},
           {key: 'abbrevLevel'},
           {key: 'abbrevAp'},
-          {key: 'abbrevWalked'}
+          {key: 'abbrevWalked'},
+          {key: 'clearEndAgentRecord'}
         ])
       });
     } catch (e) {
@@ -249,10 +250,14 @@ class AgentRecords extends Component {
     });
   }
 
-  clearAgentRecord = async(siteId, agentName) => {
+  clearAgentRecord = async(siteId, agentName, phase) => {
     try {
+      const url = "/api/deleteAgentRecord?siteId=" + siteId +
+            "&agentName=" + encodeURI(agentName) +
+            (phase === undefined ? "" : "&phase=" + phase);
+
       const resp = await fetch(
-        "/api/deleteAgentRecord?siteId=" + siteId + "&agentName=" + encodeURI(agentName), {
+        url, {
           method: "POST",
           headers: {
             "Csrf-Token": "nocheck"
@@ -568,6 +573,10 @@ class AgentRecords extends Component {
               <button className="button is-danger clearAgentRecord"
                       onClick={(e) => {this.clearAgentRecord(this.props.match.params.siteId, this.state.clearAgentRecordAgentName);}}>
                 {this.msg('clearAgentRecord')}
+              </button>&nbsp;
+              <button className="button is-danger clearEndAgentRecord"
+                      onClick={(e) => {this.clearAgentRecord(this.props.match.params.siteId, this.state.clearAgentRecordAgentName, 1);}}>
+                {this.msg('clearEndAgentRecord')}
               </button>&nbsp;
               <button className="button cancel" onClick={(e) => {this.cancelClearAgentRecord(e);}}>
                 {this.msg('cancel')}
