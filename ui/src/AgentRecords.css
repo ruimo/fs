@@ -6,11 +6,11 @@ tbody .startLevel, tbody .endLevel, tbody .earnedLevel {
     text-align: right !important;
 }
 
-tbody .startLevel, tbody .endLevel, tbody .earnedLevel {
+tbody .startAp, tbody .endAp, tbody .earnedAp, walked {
     text-align: right !important;
 }
 
-tbody .startAp, tbody .endAp, tbody .earnedAp {
+tbody .startWalked, tbody .endWalked, tbody .earnedWalked {
     text-align: right !important;
 }
 

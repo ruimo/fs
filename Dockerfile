@@ -18,7 +18,7 @@ RUN cd /opt/fs && \
   echo "ls -lh /opt/fs" >> launch.sh && \
   echo 'kill -9 `cat /opt/fs/$cmd/RUNNING_PID`' && \
   echo rm -f /opt/fs/$cmd/RUNNING_PID >> launch.sh && \
-  echo /opt/fs/$cmd/bin/fs -J-Xmx512m -Dplay.crypto.secret='${APP_SECRET}' -Dplay.evolutions.db.default.autoApply=true >> launch.sh && \
+  echo /opt/fs/$cmd/bin/fs -J-Xmx512m -Dplay.crypto.secret='${APP_SECRET}' -Dplay.evolutions.db.default.autoApply=true -Dconfig.resource=\${CONF_FILE} >> launch.sh && \
   chmod +x launch.sh
 
 RUN chown -R fsuser:fsuser /opt/fs

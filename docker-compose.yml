@@ -5,6 +5,7 @@ services:
     environment:
      - APP_SECRET
      - POSTGRES_SU_PASSWORD
+     - CONF_FILE
     ports:
      - "$PUBLISH_PORT:9000"
     restart: always
