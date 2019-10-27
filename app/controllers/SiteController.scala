@@ -46,13 +46,10 @@ class SiteController @Inject() (
       },
       site => db.withConnection { implicit conn =>
         try {
-          val newSite = siteRepo.create(site.siteName, site.utc, site.timeZone.zoneId, req.login.user.id.get)
+          val newSite = 
+            siteRepo.create(site.siteName, site.utc, site.timeZone.zoneId, req.login.user.id.get)
 
-          Ok(
-            Json.obj(
-              "id" -> newSite.id.get.value.toString
-            )
-          )
+          Ok(Json.obj("id" -> newSite.id.get.value.toString))
         } catch {
           case e: UniqueConstraintException =>
             Conflict(

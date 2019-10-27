@@ -120,7 +120,7 @@ class SiteTable extends Component {
               {
                 this.props.records.map((e) =>
                   <tr key={e.siteId}
-                      className={this.state.selectedSiteId !== undefined && this.state.selectedSiteId === e.siteId ? 'selected' : ''}>
+                      className={this.props.selectedSite !== undefined && this.props.selectedSite.siteId === e.siteId ? 'selected' : ''}>
                     <td className='siteName'>
                       <span className="siteNameBody">{e.siteName}</span>
                       &nbsp;
@@ -134,7 +134,7 @@ class SiteTable extends Component {
                     <td className="administrator">{e.owner}</td>
                     <td className="function">
                       { this.props.canDeleteSite ? (
-                        <button className="is-info button" title={this.msg("edit")}
+                        <button className="is-info button editSite" title={this.msg("edit")}
                                 onClick={(ev) => this.selectSite(e.siteId, e.siteName, e.dateTime, e.timeZone)}>
                           <i className="fas fa-pencil-alt"></i>
                           </button>)  : ""}
@@ -146,7 +146,7 @@ class SiteTable extends Component {
                         </button>)  : ""}
                       &nbsp;
                       { this.props.canDeleteSite ? (
-                        <button className="is-danger button" title={this.msg("deleteSite")}
+                        <button className="is-danger button deleteSite" title={this.msg("deleteSite")}
                            onClick={ev => this.showDeleteDialog(e.siteId, e.siteName)}>
                           <i className="far fa-trash-alt"></i>
                           </button>)  : ""}

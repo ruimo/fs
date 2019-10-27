@@ -96,21 +96,32 @@ class Site extends Component {
   }
 
   onCreateSite = () => {
-    this.createOrUpdateSite("/api/createSite");
-    this.setState({
-      selectedSite: undefined
-    });
+    this.createOrUpdateSite(
+      "/api/createSite",
+      () => {
+        this.setState({
+          selectedSite: undefined
+        });
+      }
+    );
   }
 
   onUpdateSite = () => {
-    this.createOrUpdateSite("/api/updateSite?siteId=" + this.state.selectedSite.siteId);
+    this.createOrUpdateSite(
+      "/api/updateSite?siteId=" + this.state.selectedSite.siteId,
+      () => {
+        this.setState({
+          selectedSite: undefined
+        });
+      }
+    );
   }
 
   onSiteDeleted = (siteId) => {
     this.renderRecords();
   }
 
-  createOrUpdateSite = async(url) => {
+  createOrUpdateSite = async(url, onSuccess) => {
     try {
       this.setState({
         siteNameError: undefined,
@@ -148,6 +159,7 @@ class Site extends Component {
           message: undefined,
         });
         this.renderRecords();
+        if (onSuccess !== undefined) onSuccess();
       } else if (resp.status === 400) {
         const json = await resp.json();
         console.log(JSON.stringify(json));
@@ -236,11 +248,11 @@ class Site extends Component {
           <div className="panel-block">
             <form>
               <div className="field">
-                <div className="control">
+                <div className="control siteName">
                   <label className="label">{this.msg('siteName')}</label>
                   <div className="control">
-                    <input className="input" type="text" placeholder={this.msg('siteName')} value={this.state.siteName}
-                           onChange={(e) => this.setState({siteName: e.target.value})}
+                    <input id="siteName" className="input" type="text" placeholder={this.msg('siteName')}
+                           value={this.state.siteName} onChange={(e) => this.setState({siteName: e.target.value})}
                     />
                   </div>
                   { siteNameError }
@@ -248,20 +260,20 @@ class Site extends Component {
               </div>
 
               <div className="field">
-                <div className="control">
+                <div className="control date">
                   <label className="label">{this.msg('date')}</label>
                   <div className="control">
-                    <Calendar onChange={this.onDateChanged} value={this.state.date}/>
+                    <Calendar id="openDate" onChange={this.onDateChanged} value={this.state.date}/>
                   </div>
                   { dateTimeError }
                 </div>
               </div>
 
               <div className="field">
-                <div className="control">
+                <div className="control time">
                   <label className="label">{this.msg('time')}</label>
                   <div className="control">
-                    <input className="input" type="text" value={this.state.time}
+                    <input id="openTime" className="input" type="text" value={this.state.time}
                            onChange={(e) => this.setState({time: e.target.value})}/>
                   </div>
                   { dateTimeError }
@@ -269,7 +281,7 @@ class Site extends Component {
               </div>
 
               <div className="field">
-                <div className="control">
+                <div className="control timeZone">
                   <label className="label">{this.msg('timeZone')}</label>
                   <div className="select">
                     <select id="timeZoneSelect" name="timeZoneSelect">
@@ -281,10 +293,10 @@ class Site extends Component {
               <div className="field">
                 <p className="control">
                   { this.state.selectedSite !== undefined ?
-                    <button type="button" className="button is-success update"
+                    <button id="updateSite" type="button" className="button is-success update"
                             onClick={this.onUpdateSite}>{this.msg("update")}</button>
                     : ""}
-                  <button type="button" className="button is-success"
+                  <button id="createSite" type="button" className="button is-success"
                           onClick={this.onCreateSite}>{this.msg("register")}</button>
                 </p>
               </div>
@@ -292,7 +304,7 @@ class Site extends Component {
           </div>
           <div className="panel-block">
             <SiteTable records={this.state.records} onSiteSelected={this.onSiteSelected} onSiteDeleted={this.onSiteDeleted}
-                       canDeleteSite={true}/>
+                       canDeleteSite={true} selectedSite={this.state.selectedSite}/>
           </div>
         </nav>
       </div>

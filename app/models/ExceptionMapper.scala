@@ -19,6 +19,10 @@ object ExceptionMapper {
           case "23505" => throw new UniqueConstraintException(e)
           case _ => throw e
         }
+        case "org.h2.jdbc.JdbcSQLIntegrityConstraintViolationException" => e.getSQLState() match {
+          case "23505" => throw new UniqueConstraintException(e)
+          case _ => throw e
+        }
 
         case _ => throw e
       }

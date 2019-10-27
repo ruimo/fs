@@ -64,7 +64,8 @@ class Admin extends Component {
               {this.msg('adminMenu')}
             </p>
             <p className="panel-block" >
-              <a href="#siteMaintenance" className="is-fullwidth" onClick={this.startSiteMaintenance}>
+          <a id="siteMaintenance" href="#siteMaintenance" className="is-fullwidth"
+             onClick={this.startSiteMaintenance}>
                 {this.msg('siteMaintenance')}
               </a>
             </p>
