@@ -245,10 +245,6 @@ class Attend extends Component {
     });
   }
 
-  showScore = () => {
-    this.props.history.push("/agentRecords/" + this.props.match.params.siteId);
-  }
-
   shouldDisableStartRecordButton = () => {
     return this.state.tsv === '';
   }
@@ -416,11 +412,6 @@ class Attend extends Component {
               <div className="qr">
                 <QRCode value={"https://fs.ruimo.com/attend/" + this.props.match.params.siteId} size={64}/>
               </div>
-            </div>
-          </div>
-          <div className="panel-block">
-            <div className="showScore">
-                <a className="button is-info" href="#showScore" onClick={this.showScore}>{this.msg('showScore')}</a>
             </div>
           </div>
           

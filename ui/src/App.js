@@ -152,6 +152,9 @@ class App extends Component {
             <div>
               S.Hanai
             </div>
+            <div>
+              {this.msg("usage")}
+            </div>
           </div>
         </div>
       </Router>

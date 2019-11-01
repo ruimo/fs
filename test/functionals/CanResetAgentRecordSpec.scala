@@ -89,7 +89,7 @@ class CanResetAgentRecordSpec extends Specification with InjectorSupport with Us
         $(".endRecord").getAttribute("disabled") === null
         $(".endRecord").click()
 
-        $(".showScore a").click()
+        open("/agentRecords/" + site00.id.get.value)
         $(".siteName").shouldHave(Condition.text("site00"))
         $$("table.score tbody tr").shouldHaveSize(1)
 

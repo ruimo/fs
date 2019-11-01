@@ -8,7 +8,7 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala, BuildInfoPlugin)
 
 publishTo := Some(
   Resolver.file(
-    "scoins",
+    "fs",
     new File(Option(System.getenv("RELEASE_DIR")).getOrElse("/tmp"))
   )
 )

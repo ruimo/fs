@@ -130,7 +130,7 @@ class OverwriteStartRecordSpec extends Specification with InjectorSupport with U
         $$(".records tbody .lifetimeAp").get(1).text === "312,897,992"
         $$(".records tbody .distanceWalked").get(1).text === "8,507"
 
-        $(".showScore a").click()
+        open("/agentRecords/" + site.id.get.value)
         $(".siteName").shouldHave(Condition.text("site"))
 
         $$("table.score tbody tr").shouldHaveSize(1)
