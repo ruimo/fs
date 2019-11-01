@@ -69,7 +69,8 @@ class App extends Component {
       this.setState({
         messages: await new MessagesLoader().load([
           { key: 'adminMenu'},
-          { key: 'logoff'}
+          { key: 'logoff'},
+          { key: 'usage'}
         ])
       });
     } catch (e) {
