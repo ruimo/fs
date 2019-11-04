@@ -460,7 +460,8 @@ class AgentRecords extends Component {
             <ul className="pagination-list">
               {this.state.pagination.topButtonExists ? (
                 <li>
-                  <a className="pagination-link" aria-label="Goto top page" href="#gotoTopPage">1</a>
+                  <a className="pagination-link top" aria-label="Goto top page" href="#gotoTopPage"
+                     onClick={() => this.gotoPage(0)}>1</a>
                 </li>
               ) : ""}
               {this.state.pagination.topButtonExists ? (
@@ -474,7 +475,7 @@ class AgentRecords extends Component {
                   const p = this.state.pagination.startPage + i + 1;
                   pages.push(
                     <li key={i}>
-                      <a className={cx("pagination-link",{ "is-current": this.state.pageControl.currentPage + 1 === p})}
+                      <a className={cx("pagination-link middle",{ "is-current": this.state.pageControl.currentPage + 1 === p})}
                          aria-label={"Goto page " + p} onClick={() => this.gotoPage(p - 1)} href="#gotoPage">{p}</a>
                     </li>
                   );
@@ -488,8 +489,9 @@ class AgentRecords extends Component {
               ): ""}
               {this.state.pagination.lastButtonExists ? (
                 <li>
-                  <a className="pagination-link" aria-label="Goto last page" href="#gotoLastPage">
-                    {this.state.pageControl.pageCount - 1}
+                  <a className="pagination-link bottom" aria-label="Goto last page" href="#gotoLastPage"
+                     onClick={() => this.gotoPage(this.state.pageControl.pageCount - 1)}>
+                    {this.state.pageControl.pageCount}
                   </a>
                 </li>
               ): ""}
