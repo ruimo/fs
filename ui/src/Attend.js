@@ -20,7 +20,7 @@ class Attend extends Component {
       timezone: '',
       tsv: '',
       records: {},
-      recordAlreadyExists: '',
+      recordAlreadyExists: false,
       guide: '',
       showHelp: false,
       clearAgentNameConfirm: false,
@@ -66,8 +66,7 @@ class Attend extends Component {
           { key: 'error.unknown'},
           { key: 'dateTime'},
           { key: 'timeZone'},
-          { key: 'registerBeforeRecord'},
-          { key: 'registerAfterRecord'},
+          { key: 'registerRecord'},
           { key: 'pasteAgentRecord'},
           { key: 'agentRecord'},
           { key: 'beforeRecordAlreadyExists'},
@@ -79,6 +78,7 @@ class Attend extends Component {
           { key: 'lifetimeAp'},
           { key: 'distanceWalked'},
           { key: 'createdAt'},
+          { key: 'registerRecordGuide'},
           { key: 'registerBeforeRecordGuide'},
           { key: 'registerAfterRecordGuide'},
           { key: 'registerCompleted'},
@@ -89,7 +89,9 @@ class Attend extends Component {
           { key: 'confirm'},
           { key: 'clearAgentNameGuide'},
           { key: 'clearAgentNameGuide2'},
-          { key: 'termOfUse'}
+          { key: 'termOfUse'},
+          { key: 'afterRecord'},
+          { key: 'beforeRecord'}
         ])
       });
     } catch (e) {
@@ -141,7 +143,12 @@ class Attend extends Component {
     }
   }
 
-  registerRecord = async(phase) => {
+  registerRecord = async() => {
+    this.setState({
+      csvError: undefined,
+      globalError: ''
+    });
+
     const resp = await fetch(
       "/api/registerRecord", {
         method: "POST",
@@ -151,7 +158,6 @@ class Attend extends Component {
         },
         body: JSON.stringify({
           siteId: this.props.match.params.siteId,
-          phase: phase,
           tsv: this.state.tsv,
           overwrite: false
         })
@@ -160,13 +166,12 @@ class Attend extends Component {
 
     if (resp.status === 200) {
       const json = await resp.json();
-      const agentName = json[phase].agentName;
+      const agentName = json['START'].agentName;
       localStorage.setItem("agentName", agentName);
 
       this.setState({
         records: json,
         tsv: '',
-        globalError: '',
         message: '',
         agentName
       });
@@ -181,8 +186,7 @@ class Attend extends Component {
 
       this.retrieveAgentRecord(agentName);
       this.setState({
-        recordAlreadyExists: phase,
-        globalError: '',
+        recordAlreadyExists: true,
         message: '',
         agentName
       });
@@ -193,13 +197,12 @@ class Attend extends Component {
     }
   }
 
-  cancelRegisterRecord = (e) => {
+  overwriteRecord = async() => {
     this.setState({
-      recordAlreadyExists: ''
+      csvError: undefined,
+      globalError: ''
     });
-  }
 
-  overwriteRecord = async(phase) => {
     const resp = await fetch(
       "/api/registerRecord", {
         method: "POST",
@@ -209,7 +212,6 @@ class Attend extends Component {
         },
         body: JSON.stringify({
           siteId: this.props.match.params.siteId,
-          phase: phase,
           tsv: this.state.tsv,
           overwrite: true
         })
@@ -218,25 +220,34 @@ class Attend extends Component {
 
     if (resp.status === 200) {
       const json = await resp.json();
-      localStorage.setItem("agentName", json[phase].agentName);
+      const agentName = json['START'].agentName;
+      localStorage.setItem("agentName", agentName);
 
       this.setState({
-        recordAlreadyExists: '',
-        tsv: '',
+        recordAlreadyExists: false,
         records: json,
-        globalError: '',
-        message: ''
+        tsv: '',
+        message: '',
+        agentName
       });
     } else if (resp.status === 400) {
       this.setState({
+        recordAlreadyExists: false,
         csvError: this.msg('csvFormatError'),
         message: ''
       });
     } else {
       this.setState({
+        recordAlreadyExists: false,
         globalError: this.msg('error.unknown')
       });
     }
+  }
+
+  cancelRegisterRecord = (e) => {
+    this.setState({
+      recordAlreadyExists: false
+    });
   }
 
   showHelp = () => {
@@ -283,7 +294,7 @@ class Attend extends Component {
     if (this.nullOrUndef(this.state.agentName)) {
       return (
         <div className="notification is-dark">
-        {this.msg('registerBeforeRecordGuide')}
+        {this.msg('registerRecordGuide')}
         </div>
       );
     } else {
@@ -347,7 +358,7 @@ class Attend extends Component {
         const startRec = rec.START;
         return (
           <tr>
-            <td className='phase'>{this.msg('registerBeforeRecord')}</td>
+            <td className='phase'>{this.msg('beforeRecord')}</td>
             <td className='faction'>{startRec.faction}</td>
             <td className='agentName'>{startRec.agentName}</td>
             <td className='agentLevel'>{startRec.agentLevel}</td>
@@ -365,7 +376,7 @@ class Attend extends Component {
         const endRec = rec.END;
         return (
           <tr>
-            <td className='phase'>{this.msg('registerAfterRecord')}</td>
+            <td className='phase'>{this.msg('afterRecord')}</td>
             <td className='faction'>{endRec.faction}</td>
             <td className='agentName'>{endRec.agentName}</td>
             <td className='agentLevel'>{endRec.agentLevel}</td>
@@ -443,16 +454,10 @@ class Attend extends Component {
               </div>
 
               <div id="buttons">
-                <a href="#registerBeforeRecord"
-                   className={cx("button startRecord", {'is-hidden': !this.shouldStartRecordButtonShown()})}
-                   onClick={(e) => this.registerRecord('START')} disabled={this.shouldDisableStartRecordButton()}>
-                  {this.msg('registerBeforeRecord')}
-                </a>
-                &nbsp;
-                <a href="#registerAfterRecord"
-                   className={cx("button endRecord", {'is-hidden': !this.shouldEndRecordButtonShown()})}
-                   onClick={(e) => this.registerRecord('END')} disabled={this.shouldDisableEndRecordButton()}>
-                  {this.msg('registerAfterRecord')}
+                <a href="#registerRecord"
+                   className="button registerRecord"
+                   onClick={(e) => this.registerRecord()} disabled={this.shouldDisableStartRecordButton()}>
+                  {this.msg('registerRecord')}
                 </a>
               </div>
             </div>
@@ -480,18 +485,19 @@ class Attend extends Component {
         }
 
         { /* Modals */ }
-        <div className={cx("modal recordOverwriteConfirm", {'is-active': this.state.recordAlreadyExists !== ''})}>
+        <div className={cx("modal recordOverwriteConfirm", {'is-active': this.state.recordAlreadyExists})}>
           <div className="modal-background"></div>
           <div className="modal-content">
             <div>
-              { this.state.recordAlreadyExists === 'START' ?
-                this.msg('beforeRecordAlreadyExists'):
-                this.msg('afterRecordAlreadyExists') }
+              { this.msg('afterRecordAlreadyExists') }
             </div>
             <div className='dialogButtons'>
-              <a href="#cancel" className="button cancel" onClick={(e) => {this.cancelRegisterRecord(e);}}>
+              <button className="button overwrite" onClick={(e) => {this.overwriteRecord();}}>
+                {this.msg('overwrite')}
+              </button>
+              <button className="button cancel" onClick={(e) => {this.cancelRegisterRecord(e);}}>
                 {this.msg('cancel')}
-              </a>
+              </button>
             </div>
             <div className={cx("notification is-danger errorMessage", {'is-active': this.state.globalError !== ''})}>
               {this.state.globalError}

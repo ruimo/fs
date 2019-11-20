@@ -67,8 +67,8 @@ class CanResetAgentRecordSpec extends Specification with InjectorSupport with Us
           Thread.sleep(100)
         }
 
-        $(".startRecord").getAttribute("disabled") === null
-        $(".startRecord").click()
+        $(".registerRecord").getAttribute("disabled") === null
+        $(".registerRecord").click()
 
         $$(".records tbody tr").shouldHaveSize(1)
 
@@ -86,8 +86,8 @@ class CanResetAgentRecordSpec extends Specification with InjectorSupport with Us
           Thread.sleep(100)
         }
 
-        $(".endRecord").getAttribute("disabled") === null
-        $(".endRecord").click()
+        $(".registerRecord").getAttribute("disabled") === null
+        $(".registerRecord").click()
 
         open("/agentRecords/" + site00.id.get.value)
         $(".siteName").shouldHave(Condition.text("site00"))
@@ -103,7 +103,7 @@ class CanResetAgentRecordSpec extends Specification with InjectorSupport with Us
           $("#tsv").sendKeys(Keys.BACK_SPACE)
           Thread.sleep(100)
         }
-        $(".startRecord").click()
+        $(".registerRecord").click()
 
         val tsv2StrAft = tsv2Str.replace(
           "\t14\t", "\t15\t",
@@ -118,7 +118,7 @@ class CanResetAgentRecordSpec extends Specification with InjectorSupport with Us
           $("#tsv").sendKeys(Keys.BACK_SPACE)
           Thread.sleep(100)
         }
-        $(".endRecord").click()
+        $(".registerRecord").click()
 
         open("/attend/" + site01.id.get.value)
         $$(".records tbody tr").shouldHaveSize(2)

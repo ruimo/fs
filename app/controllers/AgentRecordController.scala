@@ -51,10 +51,6 @@ class AgentRecordController @Inject() (
   def createAgentRecord = Action { implicit req =>
     val json = req.body.asJson.get
     val siteId: SiteId = SiteId((json \ "siteId").as[String].toLong)
-    val phase: AgentRecordPhase = (json \ "phase").as[String] match {
-      case "END" => AgentRecordPhase.END
-      case _ => AgentRecordPhase.START
-    }
     val tsvStr: String = (json \ "tsv").as[String]
     val overwrite: Boolean = (json \ "overwrite").as[Boolean]
     Try(Tsv.parse(tsvStr)) match {
@@ -69,20 +65,40 @@ class AgentRecordController @Inject() (
       case Success(tsv) =>
         db.withConnection { implicit conn =>
           if (! overwrite) {
-            if (agentRecordRepo.getByAgentNameWithSite(siteId, tsv.agentName).get(phase).isDefined)
-              Conflict(Json.obj("agentName" -> tsv.agentName))
-            else {
+            if (agentRecordRepo.getByAgentNameWithSite(siteId, tsv.agentName).get(AgentRecordPhase.START).isDefined) {
+              if (agentRecordRepo.getByAgentNameWithSite(siteId, tsv.agentName).get(AgentRecordPhase.END).isDefined) {
+                Conflict(Json.obj("agentName" -> tsv.agentName))
+              } else {
+                agentRecordRepo.create(
+                  siteId, tsv.faction, tsv.agentName, tsv.agentLevel, tsv.lifetimeAp,
+                  tsv.distanceWalked, AgentRecordPhase.END, tsvStr
+                )
+
+                Ok(toJson(agentRecordRepo.getByAgentNameWithSite(siteId, tsv.agentName)))
+              }
+            } else {
               agentRecordRepo.create(
-                siteId, tsv.faction, tsv.agentName, tsv.agentLevel, tsv.lifetimeAp, tsv.distanceWalked, phase, tsvStr
+                siteId, tsv.faction, tsv.agentName, tsv.agentLevel, tsv.lifetimeAp,
+                tsv.distanceWalked, AgentRecordPhase.START, tsvStr
               )
 
               Ok(toJson(agentRecordRepo.getByAgentNameWithSite(siteId, tsv.agentName)))
             }
           } else {
-            agentRecordRepo.delete(siteId, tsv.agentName, phase)
-            agentRecordRepo.create(
-              siteId, tsv.faction, tsv.agentName, tsv.agentLevel, tsv.lifetimeAp, tsv.distanceWalked, phase, tsvStr
-            )
+            if (agentRecordRepo.getByAgentNameWithSite(siteId, tsv.agentName).get(AgentRecordPhase.START).isDefined) {
+              if (agentRecordRepo.getByAgentNameWithSite(siteId, tsv.agentName).get(AgentRecordPhase.END).isDefined) {
+                agentRecordRepo.delete(siteId, tsv.agentName, AgentRecordPhase.END)
+              }
+              agentRecordRepo.create(
+                siteId, tsv.faction, tsv.agentName, tsv.agentLevel, tsv.lifetimeAp,
+                tsv.distanceWalked, AgentRecordPhase.END, tsvStr
+              )
+            } else {
+              agentRecordRepo.create(
+                siteId, tsv.faction, tsv.agentName, tsv.agentLevel, tsv.lifetimeAp,
+                tsv.distanceWalked, AgentRecordPhase.START, tsvStr
+              )
+            }
 
             Ok(toJson(agentRecordRepo.getByAgentNameWithSite(siteId, tsv.agentName)))
           }

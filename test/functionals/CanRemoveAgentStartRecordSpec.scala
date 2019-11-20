@@ -57,8 +57,8 @@ class CanRemoveAgentStartRecordSpec extends Specification with InjectorSupport w
         $("#tsv").sendKeys(" ")
         $("#tsv").sendKeys(Keys.BACK_SPACE)
 
-        $(".startRecord").getAttribute("disabled") === null
-        $(".startRecord").click()
+        $(".registerRecord").getAttribute("disabled") === null
+        $(".registerRecord").click()
 
         $$(".records tbody tr").shouldHaveSize(1)
 
@@ -73,8 +73,8 @@ class CanRemoveAgentStartRecordSpec extends Specification with InjectorSupport w
         $("#tsv").sendKeys(" ")
         $("#tsv").sendKeys(Keys.BACK_SPACE)
 
-        $(".endRecord").getAttribute("disabled") === null
-        $(".endRecord").click()
+        $(".registerRecord").getAttribute("disabled") === null
+        $(".registerRecord").click()
 
         open("/agentRecords/" + site00.id.get.value)
         $(".siteName").shouldHave(Condition.text("site00"))
@@ -89,7 +89,7 @@ class CanRemoveAgentStartRecordSpec extends Specification with InjectorSupport w
         $("#tsv").sendKeys(Keys.BACK_SPACE)
         $(".agentNameWrapper .clear").click()
         $(".dialogButtons .clear").click()
-        $(".startRecord").click()
+        $(".registerRecord").click()
 
         val tsv2StrAft = tsv2Str.replace(
           "\t14\t", "\t15\t",
@@ -101,7 +101,7 @@ class CanRemoveAgentStartRecordSpec extends Specification with InjectorSupport w
         TsvTool.setTsvTo(tsv2StrAft, $("#tsv"))
         $("#tsv").sendKeys(" ")
         $("#tsv").sendKeys(Keys.BACK_SPACE)
-        $(".endRecord").click()
+        $(".registerRecord").click()
 
         open("/agentRecords/" + site00.id.get.value)
         $$("table.score tbody tr").shouldHaveSize(2)

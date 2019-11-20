@@ -54,7 +54,7 @@ class ShowResultWithOneAttendeeSpec extends Specification with InjectorSupport w
         val dateTime = attendCtr.formatter.withZone(zoneId).format(heldOnUtc)
 
         open("/agentRecords/" + site.id.get.value)
-        $(".siteName").text === "site"
+        $(".siteName").shouldHave(Condition.text("site"))
         $(".emptyMessage").text === msg("recordEmpty")
 
         open("/attend/" + site.id.get.value)
@@ -63,9 +63,8 @@ class ShowResultWithOneAttendeeSpec extends Specification with InjectorSupport w
 
         $(".dateTime").shouldHave(Condition.text(dateTime))
         $(".timezone").text === TimeZoneInfo.tableByZoneId(zoneId).view
-        $(".notification").text === msg("registerBeforeRecordGuide")
-        $(".startRecord").getAttribute("disabled") === "true"
-        $$(".endRecord.is-hidden").shouldHaveSize(1)
+        $(".notification").text === msg("registerRecordGuide")
+        $(".registerRecord").getAttribute("disabled") === "true"
 
         val tsvStr = new String(Files.readAllBytes(Paths.get("testdata/tsv/case02.tsv")), "utf-8")
         val tsv = Tsv.parse(tsvStr)
@@ -74,11 +73,11 @@ class ShowResultWithOneAttendeeSpec extends Specification with InjectorSupport w
         $("#tsv").sendKeys(" ")
         $("#tsv").sendKeys(Keys.BACK_SPACE)
 
-        $(".startRecord").getAttribute("disabled") === null
-        $(".startRecord").click()
+        $(".registerRecord").getAttribute("disabled") === null
+        $(".registerRecord").click()
 
         $$(".records tbody tr").shouldHaveSize(1)
-        $(".records tbody .phase").text === msg("registerBeforeRecord")
+        $(".records tbody .phase").text === msg("beforeRecord")
         $(".records tbody .faction").text === "Enlightened"
         $(".records tbody .agentName").text === "shanai"
         $(".records tbody .agentLevel").text === "14"
@@ -86,7 +85,7 @@ class ShowResultWithOneAttendeeSpec extends Specification with InjectorSupport w
         $(".records tbody .distanceWalked").text === "8,506"
 
         $(".notification").text === msg("registerAfterRecordGuide")
-        $(".endRecord").getAttribute("disabled") === "true"
+        $(".registerRecord").getAttribute("disabled") === "true"
 
         val tsvStrAft = tsvStr.replace(
           "\t14\t", "\t16\t",
@@ -99,19 +98,19 @@ class ShowResultWithOneAttendeeSpec extends Specification with InjectorSupport w
         $("#tsv").sendKeys(" ")
         $("#tsv").sendKeys(Keys.BACK_SPACE)
 
-        $(".endRecord").getAttribute("disabled") === null
-        $(".endRecord").click()
+        $(".registerRecord").getAttribute("disabled") === null
+        $(".registerRecord").click()
 
         $$(".records tbody tr").shouldHaveSize(2)
 
-        $$(".records tbody .phase").get(0).text === msg("registerBeforeRecord")
+        $$(".records tbody .phase").get(0).text === msg("beforeRecord")
         $$(".records tbody .faction").get(0).text === "Enlightened"
         $$(".records tbody .agentName").get(0).text === "shanai"
         $$(".records tbody .agentLevel").get(0).text === "14"
         $$(".records tbody .lifetimeAp").get(0).text === "312,897,982"
         $$(".records tbody .distanceWalked").get(0).text === "8,506"
 
-        $$(".records tbody .phase").get(1).text === msg("registerAfterRecord")
+        $$(".records tbody .phase").get(1).text === msg("afterRecord")
         $$(".records tbody .faction").get(1).text === "Enlightened"
         $$(".records tbody .agentName").get(1).text === "shanai"
         $$(".records tbody .agentLevel").get(1).text === "16"
