@@ -23,7 +23,6 @@ class Attend extends Component {
       recordAlreadyExists: false,
       guide: '',
       showHelp: false,
-      clearAgentNameConfirm: false,
       termOfUseConfirmed: false
     };
   }
@@ -85,10 +84,7 @@ class Attend extends Component {
           { key: 'csvFormatError'},
           { key: 'showScore'},
           { key: 'abbrevFaction'},
-          { key: 'clear'},
           { key: 'confirm'},
-          { key: 'clearAgentNameGuide'},
-          { key: 'clearAgentNameGuide2'},
           { key: 'termOfUse'},
           { key: 'afterRecord'},
           { key: 'beforeRecord'}
@@ -320,15 +316,6 @@ class Attend extends Component {
     }
   }
 
-  clearAgentName = () => {
-    localStorage.removeItem("agentName");
-
-    this.setState({
-      agentName: undefined,
-      clearAgentNameConfirm: false
-    });
-  }
-
   shouldShowAgentRecord = () => {
     if (this.nullOrUndef(this.state.agentName)) return false;
     else return this.state.records.START !== undefined || this.state.records.END !== undefined;
@@ -433,11 +420,6 @@ class Attend extends Component {
                 <span className={cx("body tag is-info is-large", {'is-hidden': this.nullOrUndef(this.state.agentName)})}>
                   {this.state.agentName}
                 </span>
-                <a href="#clearAgentName"
-                   className={cx("clear button is-danger", {'is-hidden': this.nullOrUndef(this.state.agentName)})}
-                   onClick={() => this.setState({clearAgentNameConfirm: true})}>
-                  {this.msg('clear')}
-                </a>
               </div>
               { this.notification() }
 
@@ -517,34 +499,6 @@ class Attend extends Component {
                 <a href="#close-help" className="button close is-info"
                    onClick={(e) => {this.setState({showHelp: false});}}>
                   <i className="fas fa-times-circle"></i>
-                </a>
-              </div>
-            </div>
-          </div>
-          <button className="modal-close is-large" aria-label="close" onClick={(e) => {this.setState({showHelp: false});}}></button>
-        </div>
-
-        <div className={cx("modal clearAgentNameConfirm", {'is-active': this.state.clearAgentNameConfirm === true})}>
-          <div className="modal-background"></div>
-          <div className="modal-content">
-            <div className='dialogButtons'>
-              <div>
-                <div>
-                  {this.msg('clearAgentNameGuide')}
-                </div>
-                <div>
-                  {this.msg('clearAgentNameGuide2')}
-                </div>
-              </div>
-              <div>
-                <a href="#close-agent-clear-confirm" className="button clear is-info"
-                   onClick={(e) => {this.clearAgentName();}}>
-                  {this.msg('clear')}
-                </a>
-                &nbsp;
-                <a href="#close-agent-clear-confirm" className="button cancel is-info"
-                   onClick={(e) => {this.setState({clearAgentNameConfirm: false});}}>
-                  {this.msg('cancel')}
                 </a>
               </div>
             </div>

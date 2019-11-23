@@ -87,8 +87,6 @@ class CanRemoveAgentStartRecordSpec extends Specification with InjectorSupport w
         TsvTool.setTsvTo(tsv2Str, $("#tsv"))
         $("#tsv").sendKeys(" ")
         $("#tsv").sendKeys(Keys.BACK_SPACE)
-        $(".agentNameWrapper .clear").click()
-        $(".dialogButtons .clear").click()
         $(".registerRecord").click()
 
         val tsv2StrAft = tsv2Str.replace(

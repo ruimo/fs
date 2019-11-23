@@ -93,12 +93,6 @@ class OverwriteEndRecordSpec extends Specification with InjectorSupport with Usi
         $(".notification").should(Condition.text(msg("registerCompleted")))
         $$(".records tbody tr").shouldHaveSize(2)
 
-        $(".agentNameWrapper .clear").click()
-        $(".clearAgentNameConfirm .clear").click()
-        $(".agentNameWrapper .body").should(Condition.hidden)
-        $(".agentNameWrapper .clear").should(Condition.hidden)
-        $$(".records tbody tr").shouldHaveSize(0)
-
         val tsvStrAft2 = tsvStr.replace(
           "\t14\t", "\t17\t",
         ).replace(
