@@ -9,6 +9,7 @@ import Admin from "./Admin";
 import Login from "./Login";
 import Attend from "./Attend";
 import Site from "./Site";
+import User from "./User";
 import SiteList from "./SiteList";
 import LogoffButton from "./LogoffButton";
 import AgentRecords from "./AgentRecords";
@@ -140,6 +141,7 @@ class App extends Component {
               <Route exact path="/" render={() => <SiteList canDeleteSite={false}/>}/>
               <Route path="/admin" exact render={() => <Admin/>}/>
               <Route path="/site" exact render={() => <Site/>}/>
+              <Route path="/user" exact render={() => <User/>}/>
               <Route path="/login/:nextUrl" render={() => <Login onLoginSuccess={this.onLoginSuccess}/>}/>
               <Route path="/attend/:siteId" render={() => <Attend/>}/>
               <Route path="/agentRecords/:siteId" render={() => <AgentRecords loginUser={this.state.loginUser}/>}/>

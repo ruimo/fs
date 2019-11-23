@@ -43,7 +43,7 @@ class UserRepo @Inject() (
 
   def create(
     name: String, email: String, passwordHash: Long, salt: Long, role: UserRole
-  )(implicit conn: Connection): User = {
+  )(implicit conn: Connection): User = ExceptionMapper.mapException {
     SQL(
       """
       insert into users(

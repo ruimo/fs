@@ -33,6 +33,8 @@ GET     /api/agentRecords           controllers.AgentRecordController.list(siteI
 GET     /api/downloadAgentRecords   controllers.AgentRecordController.download(siteId: Long, orderBySpec: String)
 POST    /api/deleteAgentRecord      controllers.AgentRecordController.deleteAgentRecord(siteId: Long, agentName: String, phase: Option[Int])
 
+POST    /api/createUser             controllers.UserController.createUser
+
 # An example route (Prefix all API routes with apiPrefix defined in application.conf)
 GET     /api/version                controllers.HomeController.version
 

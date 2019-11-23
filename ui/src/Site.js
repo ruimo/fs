@@ -137,8 +137,7 @@ class Site extends Component {
              ' ' + this.state.time;
 
       const resp = await fetch(
-        url,
-        {
+        url, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -154,10 +153,6 @@ class Site extends Component {
 
       console.log("status: " + resp.status);
       if (resp.status === 200) {
-        this.setState({
-          globalError: undefined,
-          message: undefined,
-        });
         this.renderRecords();
         if (onSuccess !== undefined) onSuccess();
       } else if (resp.status === 400) {
@@ -180,7 +175,7 @@ class Site extends Component {
         });
       } else if (resp.status === 409) {
         this.setState({
-          siteNameError: [this.msg('duplicated')]
+          globalError: [this.msg('duplicated')]
         });
       } else {
         this.setState({

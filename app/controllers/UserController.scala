@@ -17,6 +17,8 @@ import java.time.ZoneOffset.UTC
 import helpers.PasswordHash
 import helpers.Sanitizer
 import models._
+import play.api.data.validation.Constraint
+import play.api.data.validation.Constraints._
 
 import scala.concurrent.ExecutionContext
 
@@ -37,12 +39,51 @@ class UserController @Inject() (
   val db = dbApi.database("default")
   val logger = Logger(getClass)
 
+  val createUserForm = Form(
+    mapping(
+      "userName" -> text(minLength = 8, maxLength = 32),
+      "email" -> email.verifying(nonEmpty),
+      "password" -> text(minLength = 8, maxLength = 32)
+    )(CreateUser.apply)(CreateUser.unapply)
+  )
+
   val loginForm = Form(
     mapping(
       "userName" -> text(minLength = 8, maxLength = 24),
       "password" -> text(minLength = 8, maxLength = 24)
     )(Login.apply)(Login.unapply)
   )
+
+  def createUser = authenticated(parsers.anyContent) { implicit req =>
+    if (req.login.isSuper) {
+      createUserForm.bind(req.body.asJson.get).fold(
+        formWithError => {
+          logger.error("createUser validation error " + formWithError)
+          BadRequest(formWithError.errorsAsJson(req))
+        },
+        user => db.withConnection { implicit conn =>
+          try {
+            val (salt, hash) = passwordHash.generateWithSalt(user.password)
+            val newUser = userRepo.create(
+              user.userName, user.email, hash, salt, UserRole.ADMIN
+            )
+
+            Ok(Json.obj("id" -> newUser.id.get.value.toString))
+          } catch {
+            case e: UniqueConstraintException =>
+              logger.error("createUser unique constraint exception: " + user)
+              Conflict(
+                Json.obj(
+                  "errorCode" -> "recordWithSameNameExists"
+                )
+              )
+          }
+        }
+      )
+    } else {
+      Forbidden("")
+    }
+  }
 
   def changePasswordForm = Form(
     mapping(
