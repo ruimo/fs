@@ -63,7 +63,7 @@ class CanCreateUserSpec extends Specification with InjectorSupport with UsingSel
         $("#email").setValue("user000@null.com")
         $("#createUser").click()
 
-        $(".message").shouldHave(Condition.text(messagesRepo("duplicated")))
+        $(".userName .error").shouldHave(Condition.text(messagesRepo("duplicated")))
 
         $("#logoffButton").click()
 

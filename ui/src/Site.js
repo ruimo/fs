@@ -175,7 +175,7 @@ class Site extends Component {
         });
       } else if (resp.status === 409) {
         this.setState({
-          globalError: [this.msg('duplicated')]
+          siteNameError: [this.msg('duplicated')]
         });
       } else {
         this.setState({

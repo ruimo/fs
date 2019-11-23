@@ -84,7 +84,7 @@ class User extends Component {
         this.props.history.push("/login/admin")
       } else if (resp.status === 409) {
         this.setState({
-          globalError: [this.msg('duplicated')]
+          userNameError: [this.msg('duplicated')]
         });
       } else {
         this.setState({
