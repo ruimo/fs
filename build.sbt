@@ -31,6 +31,7 @@ libraryDependencies += specs2 % Test
 libraryDependencies += "com.h2database" % "h2" % "1.4.199" % Test
 libraryDependencies += "org.seleniumhq.selenium" % "selenium-java" % "3.141.59" % Test
 libraryDependencies += "org.seleniumhq.selenium" % "selenium-chrome-driver" % "3.141.59" % Test
+libraryDependencies += "org.seleniumhq.selenium" % "selenium-firefox-driver" % "3.141.59" % Test
 libraryDependencies += "org.seleniumhq.selenium" % "selenium-remote-driver" % "3.141.59" % Test
 libraryDependencies += "org.seleniumhq.selenium" % "selenium-server" % "3.141.59" % Test
 libraryDependencies += "com.codeborne" % "selenide" % "5.0.0" % Test
