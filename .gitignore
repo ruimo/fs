@@ -10,3 +10,5 @@ public/
 .idea
 node_modules
 build/
+.metals
+ui/yarn-error.log
