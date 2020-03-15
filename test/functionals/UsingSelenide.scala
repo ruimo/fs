@@ -53,6 +53,8 @@ trait UsingSelenide extends AroundEach {
     prefs.put("intl.accept_languages", "ja-JP")
     opt.setExperimentalOption("prefs", prefs)
     opt.addArguments("--disable-gpu")
+    opt.addArguments("--disable-seccomp-filter-sandbox")
+    opt.addArguments("--disable-extensions")
     new ChromeDriver(opt)
   }
 
