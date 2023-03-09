@@ -27,7 +27,8 @@
     "react": "^16.8.6",
     "react-calendar": "^2.19.2",
     "react-dom": "^16.8.6",
-    "react-router-dom": "^5.0.1"
+    "react-router-dom": "^5.0.1",
+    "react-scripts": "^5.0.1"
   },
   "devDependencies": {
     "ncp": "^2.0.0",

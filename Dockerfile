@@ -1,4 +1,4 @@
-FROM azul/zulu-openjdk:8
+FROM azul/zulu-openjdk:11
 MAINTAINER Shisei Hanai<ruimo.uno@gmail.com>
 
 RUN apt-get update
