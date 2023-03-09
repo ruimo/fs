@@ -2,7 +2,7 @@ FROM azul/zulu-openjdk:11
 MAINTAINER Shisei Hanai<ruimo.uno@gmail.com>
 
 RUN apt-get update
-RUN apt-get install unzip ca-certificates
+RUN apt-get install unzip
 RUN useradd -d "/var/home" -s /bin/bash fsuser
 RUN mkdir -p /opt/fs
 ADD target/universal/*.zip /opt/fs
