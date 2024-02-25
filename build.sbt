@@ -13,7 +13,7 @@ publishTo := Some(
   )
 )
 
-resolvers += "ruimo.com" at "http://static.ruimo.com/release"
+resolvers += "ruimo.com" at "https://static.ruimo.com/release"
 
 resolvers += Resolver.sonatypeRepo("snapshots")
 
